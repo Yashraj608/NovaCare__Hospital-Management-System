@@ -7,7 +7,6 @@ A full-stack web application built with **Django** that digitizes end-to-end hos
 ![Python](https://img.shields.io/badge/Python-3.x-blue?style=flat-square&logo=python)
 ![Django](https://img.shields.io/badge/Django-6.0.3-green?style=flat-square&logo=django)
 ![SQLite](https://img.shields.io/badge/Database-SQLite3-lightgrey?style=flat-square&logo=sqlite)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
 </div>
 
