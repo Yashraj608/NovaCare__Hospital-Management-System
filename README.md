@@ -71,6 +71,6 @@ NovaCare is a Django-based hospital management system that supports patient mana
 - The project uses SQLite by default.
 - Media files and uploaded images are stored in the media/ folder.
 
-## Author
+## Developer
 
 Yash Raj
