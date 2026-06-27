@@ -1,0 +1,328 @@
+{% extends 'accounts/admin_base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard | NovaCare{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+{% block header_title %}Dashboard{% endblock %}
+{% block header_subtitle %}Hello Admin, welcome back!{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Grid Layout */
+    .dashboard-grid { display: grid; grid-template-columns: 3fr 1fr; gap: 1.5rem; }
+    
+    .left-column { display: flex; flex-direction: column; gap: 1.5rem; }
+    .right-column { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    /* Cards */
+    .card { background: var(--card-bg); border-radius: var(--border-radius); padding: 1.5rem; box-shadow: var(--card-shadow); border: 1px solid var(--border); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; }
+    .card-title { font-weight: 600; color: var(--text-main); font-size: 1.1rem; }
+
+    /* Stat Cards */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .stat-card { background: white; border-radius: var(--border-radius); padding: 1.5rem; border: 1px solid var(--border); box-shadow: var(--card-shadow); display: flex; flex-direction: column; gap: 0.8rem; }
+    .stat-header { display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; }
+    .stat-icon { width: 36px; height: 36px; border-radius: 8px; background: #0f4c81; color: white; display: flex; align-items: center; justify-content: center; }
+    .stat-value { font-size: 2rem; font-weight: 700; color: var(--text-main); }
+    .stat-trend { font-size: 0.8rem; font-weight: 500; color: var(--secondary); display: flex; align-items: center; gap: 0.3rem; background: #e8f5e9; padding: 0.3rem 0.6rem; border-radius: 20px; width: fit-content; }
+
+    /* Charts Grid */
+    .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+    .chart-container { position: relative; height: 250px; width: 100%; }
+
+    /* Appointments Table */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 1rem; color: var(--text-muted); font-weight: 500; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+    td { padding: 1rem; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; color: var(--text-main); }
+    .status-badge { padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
+    .status-completed { background: #e3f2fd; color: #1976d2; }
+    .status-pending { background: #fff3e0; color: #f57c00; }
+
+    /* Reports List */
+    .report-item { display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #f0f0f0; }
+    .report-item:last-child { border-bottom: none; }
+    .report-icon { width: 32px; height: 32px; border-radius: 50%; background: #e3f2fd; color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .report-content h5 { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.2rem; }
+    .report-content p { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* Doctors Schedule List */
+    .doctor-item { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 0; border-bottom: 1px solid #f0f0f0; }
+    .doc-info { display: flex; align-items: center; gap: 0.8rem; }
+    .doc-avatar { width: 36px; height: 36px; border-radius: 50%; background: #eee; object-fit: cover; }
+    .doc-name { font-size: 0.9rem; font-weight: 600; }
+    .doc-dept { font-size: 0.8rem; color: var(--text-muted); }
+    .doc-status { padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500; }
+    .doc-status.available { background: #e8f5e9; color: var(--secondary); }
+    .doc-status.unavailable { background: #ffebee; color: #d32f2f; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Grid Layout -->
+<div class="dashboard-grid">
+    
+    <!-- Left Column -->
+    <div class="left-column">
+        
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Total Patients</span>
+                    <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                </div>
+                <div class="stat-value">{{ total_patients }}</div>
+                <div class="stat-trend"><i class="fa-solid fa-arrow-trend-up"></i> +4.5% vs. last week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Appointments</span>
+                    <div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                </div>
+                <div class="stat-value">{{ total_appointments }}</div>
+                <div class="stat-trend"><i class="fa-solid fa-arrow-trend-up"></i> +8% vs. yesterday</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Total Revenue</span>
+                    <div class="stat-icon"><i class="fa-solid fa-dollar-sign"></i></div>
+                </div>
+                <div class="stat-value">${{ total_revenue }}</div>
+                <div class="stat-trend"><i class="fa-solid fa-arrow-trend-up"></i> +12% vs. last month</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Revenue (Income)</span>
+                    <span style="color:var(--text-muted);font-size:0.85rem;background:#f0f0f0;padding:0.2rem 0.6rem;border-radius:4px;">This Year <i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Patient by Departments</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="deptChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments Table -->
+        <div class="charts-grid" style="grid-template-columns: 1fr;">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Patient Appointment</span>
+                    <span style="color:var(--text-muted);font-size:0.85rem;background:#f0f0f0;padding:0.2rem 0.6rem;border-radius:4px;">This Week <i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Doctor (+ Specialty)</th>
+                                <th>Date & Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appt in recent_appointments %}
+                            <tr>
+                                <td><strong>{{ appt.patient.user.get_full_name|default:appt.patient.user.username }}</strong></td>
+                                <td>
+                                    <div style="font-weight:500;">Dr. {{ appt.doctor.user.last_name }}</div>
+                                    <div style="font-size:0.8rem;color:var(--text-muted);">{{ appt.doctor.department.name|default:"General" }}</div>
+                                </td>
+                                <td>{{ appt.date|date:"d M Y" }}<br><small style="color:var(--text-muted);">{{ appt.time|time:"H:i" }}</small></td>
+                                <td>
+                                    <span class="status-badge {% if appt.status == 'Completed' %}status-completed{% else %}status-pending{% endif %}">{{ appt.status }}</span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4">No recent appointments.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right Column -->
+    <div class="right-column">
+        
+        <!-- Mini Calendar (Static visual for now) -->
+        <div class="card" style="text-align: center;">
+            <div class="card-header">
+                <span class="card-title">{% now "F Y" %}</span>
+                <div><i class="fa-solid fa-chevron-left" style="color:var(--text-muted);cursor:pointer;"></i> <i class="fa-solid fa-chevron-right" style="color:var(--text-muted);cursor:pointer;margin-left:10px;"></i></div>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap: 10px; font-size: 0.85rem; margin-bottom: 1rem; color:var(--text-muted);">
+                <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap: 10px; font-size: 0.9rem; font-weight:500;">
+                {% for i in "123456789" %}
+                <span style="padding:5px;">{{ forloop.counter }}</span>
+                {% endfor %}
+                <span style="background:var(--primary);color:white;border-radius:50%;padding:5px;width:28px;height:28px;margin:auto;display:flex;align-items:center;justify-content:center;">10</span>
+                {% for i in "12345678901234567890" %}
+                <span style="padding:5px;">{{ forloop.counter|add:10 }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Agenda -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Agenda (Today)</span>
+            </div>
+            
+            {% for appt in todays_agenda %}
+            <div style="display:flex; gap:1rem; background:#e3f2fd; padding:1rem; border-radius:8px; margin-bottom:1rem;">
+                <div style="text-align:center; background:white; padding:0.5rem; border-radius:6px; min-width:50px;">
+                    <div style="font-weight:bold; font-size:1.2rem;">{{ appt.date|date:"d" }}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">{{ appt.date|date:"D" }}</div>
+                </div>
+                <div>
+                    <span style="background:var(--primary); color:white; font-size:0.7rem; padding:2px 6px; border-radius:4px;">Consultation</span>
+                    <h5 style="margin-top:0.3rem; font-size:0.9rem;">Patient: {{ appt.patient.user.first_name|default:"Unknown" }}</h5>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">{{ appt.time|time:"H:i" }} | Dr. {{ appt.doctor.user.last_name }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div style="padding:1rem; text-align:center; color:var(--text-muted); font-size:0.9rem;">
+                No appointments scheduled for today.
+            </div>
+            {% endfor %}
+            
+        </div>
+
+        <!-- Doctors Schedule -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Doctors' Schedule</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; text-align:center; margin-bottom:1.5rem; border-bottom:1px solid #f0f0f0; padding-bottom:1rem;">
+                <div>
+                    <div style="font-size:1.5rem; font-weight:bold;">{{ doctors.count }}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">All Doctors</div>
+                </div>
+                <div>
+                    <div style="font-size:1.5rem; font-weight:bold; color:var(--secondary);">{{ doctors.count }}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Available</div>
+                </div>
+            </div>
+            
+            <div style="max-height: 250px; overflow-y:auto; padding-right:5px;">
+                {% for doc in doctors %}
+                <div class="doctor-item">
+                    <div class="doc-info">
+                        <div class="doc-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--primary);color:white;font-weight:bold;font-size:1.2rem;">{{ doc.user.last_name|first|default:"D" }}</div>
+                        <div>
+                            <div class="doc-name">Dr. {{ doc.user.get_full_name|default:doc.user.username }}</div>
+                            <div class="doc-dept">{{ doc.department.name|default:"General" }}</div>
+                        </div>
+                    </div>
+                    <span class="doc-status available">Available</span>
+                </div>
+                {% empty %}
+                <p style="color:var(--text-muted);font-size:0.9rem;">No doctors registered.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Data passed from Django view
+    const deptLabels = {{ dept_labels|safe }};
+    const deptData = {{ dept_data|safe }};
+    const monthlyRevenue = {{ monthly_revenue|safe }};
+    
+    // Revenue Line Chart (Real monthly data)
+    const ctxRev = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctxRev, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [
+                {
+                    label: 'Income ($)',
+                    data: monthlyRevenue,
+                    borderColor: '#0f4c81',
+                    backgroundColor: 'rgba(15, 76, 129, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 6 } } },
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [2, 2] } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Departments Donut Chart (Real Data)
+    const ctxDept = document.getElementById('deptChart').getContext('2d');
+    new Chart(ctxDept, {
+        type: 'doughnut',
+        data: {
+            labels: deptLabels.length > 0 ? deptLabels : ['General Medicine', 'Cardiology', 'Pediatrics'],
+            datasets: [{
+                data: deptData.length > 0 ? deptData : [50, 25, 25],
+                backgroundColor: ['#0f4c81', '#1a76d2', '#4bc0c0', '#e3f2fd', '#99b898'],
+                borderWidth: 0,
+                cutout: '75%'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false } // We can render custom legend if needed
+            }
+        },
+        plugins: [{
+            id: 'textCenter',
+            beforeDraw: function(chart) {
+                var width = chart.width, height = chart.height, ctx = chart.ctx;
+                ctx.restore();
+                var fontSize = (height / 114).toFixed(2);
+                ctx.font = "bold " + fontSize + "em sans-serif";
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "#2b3445";
+                var text = "{{ total_patients }}",
+                    textX = Math.round((width - ctx.measureText(text).width) / 2),
+                    textY = height / 2;
+                ctx.fillText(text, textX, textY);
+                
+                ctx.font = "normal 0.8em sans-serif";
+                ctx.fillStyle = "#7d879c";
+                var text2 = "All Patients",
+                    text2X = Math.round((width - ctx.measureText(text2).width) / 2),
+                    text2Y = (height / 2) - 20;
+                ctx.fillText(text2, text2X, text2Y);
+                ctx.save();
+            }
+        }]
+    });
+</script>
+{% endblock %}

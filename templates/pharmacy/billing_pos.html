@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}Billing & POS - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: var(--primary-dark); color: white; padding: 2rem; text-align: center;">
+    <h1>Pharmacy Point of Sale</h1>
+</section>
+
+<section style="padding: 2rem; background: var(--bg-light); min-height: 50vh;">
+    <div class="container">
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 1rem; border-radius: 6px; margin-bottom: 1rem; {% if message.tags == 'error' %}background: #f8d7da; color: #721c24;{% else %}background: #d4edda; color: #155724;{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div style="display: flex; gap: 2rem;">
+            <!-- Available Medicines -->
+            <div style="flex: 1; background: white; border-radius: 12px; padding: 2rem; box-shadow: var(--shadow-sm);">
+                <h3 style="margin-top: 0;">Available Medicines</h3>
+                <input type="text" id="searchBox" placeholder="Search medicines..." style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 6px;" onkeyup="filterMedicines()">
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <ul id="medicineList" style="list-style: none; padding: 0; margin: 0;">
+                        {% for med in medicines %}
+                        <li class="med-item" data-name="{{ med.name|lower }}" style="padding: 1rem; border: 1px solid #eaeaea; margin-bottom: 0.5rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>{{ med.name }}</strong> <br>
+                                <small style="color: var(--text-muted);">${{ med.price }} | Stock: {{ med.stock_quantity }}</small>
+                            </div>
+                            <button onclick="addToCart({{ med.id }}, '{{ med.name|escapejs }}', {{ med.price }}, {{ med.stock_quantity }})" style="background: var(--secondary-color); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer;">Add to Cart</button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Billing Cart -->
+            <div style="flex: 1; background: white; border-radius: 12px; padding: 2rem; box-shadow: var(--shadow-sm);">
+                <h3 style="margin-top: 0;">Current Bill</h3>
+                <form method="post" id="billForm">
+                    {% csrf_token %}
+                    <div style="margin-bottom: 1rem;">
+                        <label>Patient/Customer Name:</label>
+                        <input type="text" name="patient_name" required style="width: 100%; padding: 0.5rem; margin-top: 0.5rem; border: 1px solid #ccc; border-radius: 6px;">
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 1rem;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #ccc;">
+                                <th style="text-align: left; padding: 0.5rem;">Item</th>
+                                <th style="text-align: left; padding: 0.5rem;">Qty</th>
+                                <th style="text-align: right; padding: 0.5rem;">Price</th>
+                                <th style="text-align: center; padding: 0.5rem;">Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartItems">
+                            <!-- Items inserted here -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="2" style="text-align: right; padding: 1rem 0.5rem;">Total:</th>
+                                <th style="text-align: right; padding: 1rem 0.5rem; font-size: 1.2rem; color: var(--primary);" id="totalAmount">$0.00</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <button type="submit" class="btn" style="width: 100%; background: var(--success); color: white; padding: 1rem; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold;">Generate Bill</button>
+                    <a href="{% url 'pharmacy:pharmacist_dashboard' %}" class="btn" style="display: block; text-align: center; background: #e2e8f0; color: #475569; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 6px; margin-top: 1rem;">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    let cart = {};
+
+    function filterMedicines() {
+        let input = document.getElementById('searchBox').value.toLowerCase();
+        let items = document.getElementsByClassName('med-item');
+        for (let i = 0; i < items.length; i++) {
+            let name = items[i].getAttribute('data-name');
+            items[i].style.display = name.indexOf(input) > -1 ? 'flex' : 'none';
+        }
+    }
+
+    function addToCart(id, name, price, maxStock) {
+        if (!cart[id]) {
+            cart[id] = { name: name, price: price, qty: 1, max: maxStock };
+        } else {
+            if (cart[id].qty < maxStock) {
+                cart[id].qty += 1;
+            } else {
+                alert("Cannot exceed available stock.");
+            }
+        }
+        renderCart();
+    }
+
+    function updateQty(id, change) {
+        if (cart[id]) {
+            let newQty = cart[id].qty + change;
+            if (newQty > 0 && newQty <= cart[id].max) {
+                cart[id].qty = newQty;
+            } else if (newQty <= 0) {
+                delete cart[id];
+            } else {
+                alert("Cannot exceed available stock.");
+            }
+        }
+        renderCart();
+    }
+
+    function removeFromCart(id) {
+        delete cart[id];
+        renderCart();
+    }
+
+    function renderCart() {
+        let tbody = document.getElementById('cartItems');
+        let totalSpan = document.getElementById('totalAmount');
+        tbody.innerHTML = '';
+        let total = 0;
+
+        for (let id in cart) {
+            let item = cart[id];
+            let rowTotal = item.price * item.qty;
+            total += rowTotal;
+
+            tbody.innerHTML += `
+                <tr style="border-bottom: 1px solid #eaeaea;">
+                    <td style="padding: 0.5rem;">
+                        ${item.name}
+                        <input type="hidden" name="medicine_id[]" value="${id}">
+                        <input type="hidden" name="quantity[]" value="${item.qty}">
+                    </td>
+                    <td style="padding: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <button type="button" onclick="updateQty(${id}, -1)" style="padding: 0.2rem 0.5rem; cursor: pointer;">-</button>
+                        ${item.qty}
+                        <button type="button" onclick="updateQty(${id}, 1)" style="padding: 0.2rem 0.5rem; cursor: pointer;">+</button>
+                    </td>
+                    <td style="text-align: right; padding: 0.5rem;">$${rowTotal.toFixed(2)}</td>
+                    <td style="text-align: center; padding: 0.5rem;"><button type="button" onclick="removeFromCart(${id})" style="color: #dc3545; border: none; background: none; cursor: pointer;"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+            `;
+        }
+        totalSpan.innerText = '$' + total.toFixed(2);
+    }
+</script>
+{% endblock %}

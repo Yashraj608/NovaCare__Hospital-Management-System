@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Hospital Branches - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: linear-gradient(135deg, var(--secondary-color), var(--primary-dark)); color: white; padding: 5rem 2rem; text-align: center;">
+    <h1 class="reveal" style="font-size: 3.5rem; margin-bottom: 1rem;">Our Locations</h1>
+    <p class="reveal" style="font-size: 1.3rem; max-width: 650px; margin: 0 auto; opacity: 0.95;">Find a NovaCare Hospital branch near you for exceptional and timely medical care.</p>
+</section>
+
+<section style="padding: 6rem 2rem; background: var(--bg-light);">
+    <div class="container reveal">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 3rem;">
+            
+            <!-- Branch 1 -->
+            <div class="card" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md); transition: transform 0.3s;">
+                <div style="height: 200px; background: url({% static 'images/modern_hospital_exterior_1773590818908.png' %}) center/cover;"></div>
+                <div style="padding: 2.5rem;">
+                    <h3 style="color: var(--primary-dark); font-size: 1.8rem; margin-bottom: 1rem;">NovaCare Main Campus</h3>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1rem;"><i class="fa-solid fa-location-dot" style="color: var(--primary-color);"></i> 123 Health Ave, New York, NY 10001</p>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-phone" style="color: var(--primary-color);"></i> +1 (800) 123-4567</p>
+                    <p style="color: var(--success); font-weight: 600; margin-top: 1.5rem;"><i class="fa-solid fa-circle-check"></i> Primary Care, ER, Surgery</p>
+                </div>
+            </div>
+
+            <!-- Branch 2 -->
+            <div class="card" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md); transition: transform 0.3s;">
+                <div style="height: 200px; background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url({% static 'images/mri_machine_room_1773592072773.png' %}) center/cover;"></div>
+                <div style="padding: 2.5rem;">
+                    <h3 style="color: var(--primary-dark); font-size: 1.8rem; margin-bottom: 1rem;">NovaCare Diagnostic Center</h3>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1rem;"><i class="fa-solid fa-location-dot" style="color: var(--primary-color);"></i> 455 Imaging Blvd, Brooklyn, NY</p>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-phone" style="color: var(--primary-color);"></i> +1 (800) 765-4321</p>
+                    <p style="color: var(--success); font-weight: 600; margin-top: 1.5rem;"><i class="fa-solid fa-circle-check"></i> MRI, Radiology, Pathology Lab</p>
+                </div>
+            </div>
+
+            <!-- Branch 3 -->
+            <div class="card" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md); transition: transform 0.3s;">
+                <div style="height: 200px; background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url({% static 'images/doctor_consultation_smiling_1773591303749.png' %}) center/cover;"></div>
+                <div style="padding: 2.5rem;">
+                    <h3 style="color: var(--primary-dark); font-size: 1.8rem; margin-bottom: 1rem;">NovaCare Family Clinic</h3>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1rem;"><i class="fa-solid fa-location-dot" style="color: var(--primary-color);"></i> 789 Community Road, Queens, NY</p>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-phone" style="color: var(--primary-color);"></i> +1 (800) 111-2222</p>
+                    <p style="color: var(--success); font-weight: 600; margin-top: 1.5rem;"><i class="fa-solid fa-circle-check"></i> Outpatient clinics, Pediatrics</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}

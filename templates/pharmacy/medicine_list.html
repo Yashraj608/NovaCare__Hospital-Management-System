@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Manage Medicines - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: var(--primary-dark); color: white; padding: 2rem; text-align: center;">
+    <h1>Manage Inventory</h1>
+    <a href="{% url 'pharmacy:medicine_add' %}" class="btn" style="background: var(--secondary-color); color: white; padding: 0.5rem 1rem; border-radius: 6px; margin-top: 1rem; display: inline-block;">+ Add New Medicine</a>
+</section>
+
+<section style="padding: 2rem; background: var(--bg-light); min-height: 50vh;">
+    <div class="container" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: var(--shadow-sm);">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f8f9fa;">
+                <tr>
+                    <th style="padding: 1rem; width: 60px;">Image</th>
+                    <th style="padding: 1rem; text-align: left;">Name</th>
+                    <th style="padding: 1rem; text-align: left;">Formula</th>
+                    <th style="padding: 1rem; text-align: left;">Stock</th>
+                    <th style="padding: 1rem; text-align: left;">Price</th>
+                    <th style="padding: 1rem; text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for med in medicines %}
+                <tr style="border-bottom: 1px solid #eaeaea; align-items: center;">
+                    <td style="padding: 1rem;">
+                        {% if med.image %}
+                        <img src="{{ med.image.url }}" alt="{{ med.name }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; box-shadow: var(--shadow-sm);">
+                        {% else %}
+                        <div style="width: 50px; height: 50px; background: #e2e8f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                            <i class="fa-solid fa-pills"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem;">
+                        <strong>{{ med.name }}</strong>
+                        {% if med.requires_prescription %}
+                        <span style="background: #f8d7da; color: #721c24; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px; margin-left: 0.5rem;">Rx</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem; color: var(--text-muted);">{{ med.formula }}</td>
+                    <td style="padding: 1rem;">
+                        <div style="font-size: 1.2rem; font-weight: bold; {% if med.stock_quantity < 10 %}color: #dc3545;{% endif %}">
+                            {{ med.stock_quantity }}
+                        </div>
+                        <form method="post" action="{% url 'pharmacy:update_stock' med.id %}" style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem;">
+                            {% csrf_token %}
+                            <input type="number" name="amount" min="1" placeholder="Qty" style="width: 60px; padding: 0.2rem;" required>
+                            <button type="submit" name="action" value="add" style="background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; padding: 0.2rem 0.5rem;" title="Add Stock">+</button>
+                            <button type="submit" name="action" value="remove" style="background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; padding: 0.2rem 0.5rem;" title="Remove Stock">-</button>
+                        </form>
+                    </td>
+                    <td style="padding: 1rem;">
+                        <span style="font-size: 1.1rem; color: var(--primary); font-weight: bold;">${{ med.price }}</span>
+                    </td>
+                    <td style="padding: 1rem; text-align: right;">
+                        <a href="{% url 'pharmacy:medicine_edit' med.id %}" style="color: var(--primary); margin-right: 1rem;">Edit</a>
+                        <a href="{% url 'pharmacy:medicine_delete' med.id %}" style="color: var(--danger);">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="padding: 4rem; text-align: center; color: var(--text-muted);">
+                        <i class="fa-solid fa-box-open" style="font-size: 5rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                        <h2 style="color: var(--primary-dark); margin-bottom: 0.5rem;">Your Inventory is Empty!</h2>
+                        <p style="font-size: 1.1rem; max-width: 500px; margin: 0 auto 2rem auto;">
+                            The full list of your medicines will appear right here in this table. To get started, click the <strong>"+ Add New Medicine"</strong> button at the top of the screen to add your first medicine to the system!
+                        </p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

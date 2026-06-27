@@ -1,0 +1,150 @@
+{% extends 'accounts/admin_base.html' %}
+{% load static %}
+
+{% block title %}Doctors | NovaCare Admin{% endblock %}
+{% block nav_doctors %}active{% endblock %}
+{% block header_title %}Doctors{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Main Container */
+    .card-container { background: var(--card-bg); border-radius: var(--border-radius); padding: 1.5rem; box-shadow: var(--card-shadow); border: 1px solid var(--border); }
+    
+    /* Toolbar inside card */
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+    
+    /* Custom Tabs */
+    .tabs { display: flex; gap: 2rem; overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; align-items: center; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab-link { background: none; border: none; font-size: 0.9rem; font-weight: 500; color: var(--text-muted); cursor: pointer; padding-bottom: 1rem; position: relative; white-space: nowrap; }
+    .tab-link:hover { color: var(--primary); }
+    .tab-link.active { color: var(--primary); font-weight: 600; }
+    .tab-link.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: var(--primary); border-radius: 3px 3px 0 0; }
+    
+    .toolbar-actions { display: flex; gap: 1rem; align-items: center; }
+    .btn-primary { background: var(--primary); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 500; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 6px rgba(26,118,210,0.2); transition: 0.2s; }
+    .btn-primary:hover { background: var(--primary-dark); }
+
+    /* Grid */
+    .doctors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+    
+    /* Doctor Card */
+    .doc-card { border: 1px solid var(--border); border-radius: var(--border-radius); overflow: hidden; background: white; display: flex; flex-direction: column; }
+    .doc-header { padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .doc-name { font-weight: 600; font-size: 1rem; color: var(--text-main); }
+    .doc-status { padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; margin-top: 0.3rem; display: inline-block; }
+    .status-available { background: var(--secondary-light); color: var(--secondary); }
+    .status-unavailable { background: #ffebee; color: #d32f2f; }
+    
+    .doc-image-container { width: 100%; height: 180px; background: #f8f9fa; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; }
+    .doc-image { width: 100%; height: 100%; object-fit: cover; }
+    .doc-image-placeholder { font-size: 4rem; color: #dee2e6; margin-bottom: 2rem; }
+    
+    .doc-body { padding: 1.2rem; text-align: center; border-bottom: 1px solid var(--border); }
+    .doc-dept { color: var(--primary); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem; }
+    .doc-schedule { font-size: 0.75rem; color: var(--text-muted); }
+    
+    .doc-footer { padding: 1rem; display: flex; justify-content: space-between; align-items: center; background: #fafbfc; }
+    .icon-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+    .icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-assign { background: #e0f2f1; color: #009688; border: none; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-assign:hover { background: #009688; color: white; }
+    
+    /* Simple filtering script class */
+    .hidden { display: none !important; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Top Page Actions -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div>
+        <h3 style="color: var(--text-main); font-size: 1.1rem; font-weight: 600;">All Doctors</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">{{ doctors.count }} registered doctors</p>
+    </div>
+    <a href="{% url 'core:add_doctor' %}" class="btn-primary" style="text-decoration:none;"><i class="fa-solid fa-plus"></i> Add New Doctor</a>
+</div>
+
+<!-- Main Card Container -->
+<div class="card-container">
+    
+    <!-- Toolbar & Tabs -->
+    <div class="toolbar">
+        <div class="tabs" id="deptTabs">
+            <button class="tab-link active" onclick="filterDept('All', this)">All</button>
+            {% for dept in departments %}
+                <button class="tab-link" onclick="filterDept('{{ dept.name|escapejs }}', this)">{{ dept.name }}</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="doctors-grid" id="doctorsGrid">
+        {% for doctor in doctors %}
+        <div class="doc-card" data-dept="{{ doctor.department.name|default:'General' }}">
+            <div class="doc-header">
+                <div>
+                    <div class="doc-name">Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</div>
+                    <div class="doc-status status-available">Available</div>
+                </div>
+                <i class="fa-solid fa-ellipsis" style="color:var(--text-muted);cursor:pointer;"></i>
+            </div>
+            
+            <div class="doc-image-container">
+                {% if doctor.profile_picture %}
+                    <img src="{{ doctor.profile_picture.url }}" alt="{{ doctor.user.username }}" class="doc-image">
+                {% else %}
+                    <i class="fa-solid fa-user-doctor doc-image-placeholder"></i>
+                {% endif %}
+            </div>
+            
+            <div class="doc-body">
+                <div class="doc-dept">{{ doctor.department.name|default:"General Medicine" }}</div>
+                <div class="doc-schedule">{{ doctor.availability|default:"Monday - Friday (08:00 - 14:00)" }}</div>
+            </div>
+            
+            <div class="doc-footer">
+                <div style="display:flex;gap:0.5rem;">
+                    <a href="{% url 'core:edit_doctor' doctor.id %}" class="icon-btn" title="Edit Doctor"><i class="fa-regular fa-edit"></i></a>
+                    <form action="{% url 'accounts:admin_delete_doctor' doctor.id %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete Dr. {{ doctor.user.last_name }}?');">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn" style="color: #d32f2f;" title="Delete Doctor"><i class="fa-regular fa-trash-can"></i></button>
+                    </form>
+                </div>
+                <button class="btn-assign">Assign Patient</button>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align:center; padding: 3rem; color:var(--text-muted);">
+            <i class="fa-solid fa-user-doctor" style="font-size:3rem;margin-bottom:1rem;color:#ccc;"></i>
+            <p>No doctors registered in the system yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterDept(deptName, btn) {
+        // Update active tab styling
+        document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Filter grid
+        const cards = document.querySelectorAll('.doc-card');
+        cards.forEach(card => {
+            if (deptName === 'All') {
+                card.classList.remove('hidden');
+            } else {
+                if (card.dataset.dept === deptName) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

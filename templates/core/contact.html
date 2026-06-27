@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Contact Us - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 5rem 2rem; text-align: center;">
+    <h1 class="reveal" style="font-size: 3.5rem; margin-bottom: 1rem;">Get In Touch</h1>
+    <p class="reveal" style="font-size: 1.3rem; max-width: 650px; margin: 0 auto; opacity: 0.95;">We're here to help and answer any question you might have. We look forward to hearing from you.</p>
+</section>
+
+<section style="padding: 6rem 2rem; background: var(--bg-light);">
+    <div class="container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5rem;">
+        
+        <!-- Contact Info -->
+        <div class="reveal">
+            <h2 style="color: var(--primary-dark); font-size: 2.5rem; margin-bottom: 2rem;">Contact Information</h2>
+            
+            <div style="display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 2rem;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: white; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; color: var(--primary-color);">
+                    <i class="fa-solid fa-location-dot" style="font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <h4 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Location</h4>
+                    <p style="color: var(--text-muted); font-size: 1.1rem;">123 Health Avenue, Medical District<br>New York, NY 10001</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 2rem;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: white; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; color: var(--primary-color);">
+                    <i class="fa-solid fa-phone" style="font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <h4 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Phone</h4>
+                    <p style="color: var(--text-muted); font-size: 1.1rem;">Emergency: 911<br>General: +1 (800) 123-4567<br>Appointments: +1 (800) 987-6543</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: white; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; color: var(--primary-color);">
+                    <i class="fa-solid fa-envelope" style="font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <h4 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Email</h4>
+                    <p style="color: var(--text-muted); font-size: 1.1rem;">care@novacare.com<br>support@novacare.com</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Form -->
+        <div class="reveal" style="background: white; padding: 3rem; border-radius: 16px; box-shadow: var(--shadow-md);">
+            <h3 style="font-size: 2rem; color: var(--primary-dark); margin-bottom: 2rem;">Send us a Message</h3>
+            <form action="#" method="POST" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                {% csrf_token %}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <input type="text" placeholder="First Name" required style="padding: 1rem; border-radius: 8px; border: 1px solid #ccc; width: 100%; font-size: 1rem;">
+                    <input type="text" placeholder="Last Name" required style="padding: 1rem; border-radius: 8px; border: 1px solid #ccc; width: 100%; font-size: 1rem;">
+                </div>
+                <input type="email" placeholder="Email Address" required style="padding: 1rem; border-radius: 8px; border: 1px solid #ccc; width: 100%; font-size: 1rem;">
+                <input type="text" placeholder="Subject" required style="padding: 1rem; border-radius: 8px; border: 1px solid #ccc; width: 100%; font-size: 1rem;">
+                <textarea rows="5" placeholder="How can we help you?" required style="padding: 1rem; border-radius: 8px; border: 1px solid #ccc; width: 100%; font-size: 1rem; resize: vertical;"></textarea>
+                <button type="submit" class="btn btn-primary" style="padding: 1rem; font-size: 1.1rem; border-radius: 8px; margin-top: 1rem;">Send Message</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

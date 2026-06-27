@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Our Services - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 6rem 2rem; text-align: center;">
+    <h1 class="reveal" style="font-size: 3.5rem; margin-bottom: 1rem;">Medical Services & Testing</h1>
+    <p class="reveal" style="font-size: 1.3rem; max-width: 700px; margin: 0 auto; opacity: 0.95;">Comprehensive diagnostic and therapeutic services using cutting-edge medical technology.</p>
+</section>
+
+<section style="padding: 6rem 2rem; background: var(--bg-light);">
+    <div class="container">
+        
+        <!-- Featured Services Layout using alternating grids -->
+        <div style="display: flex; flex-direction: column; gap: 6rem;">
+            
+            <!-- MRI Highlight -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;" class="reveal">
+                <img src="{% static 'images/mri_machine_room_1773592072773.png' %}" alt="MRI Machine" style="width: 100%; border-radius: 16px; box-shadow: var(--shadow-lg);">
+                <div>
+                    <h2 style="color: var(--primary-dark); font-size: 2.5rem; margin-bottom: 1.5rem;">Advanced MRI Scans</h2>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2.5rem; line-height: 1.8;">Our state-of-the-art Magnetic Resonance Imaging (MRI) suite provides detailed, high-resolution images of the body's internal structures. Emphasizing patient comfort, our rooms feature calming lighting and fast-scan protocols to significantly reduce scan times.</p>
+                    <a href="{% url 'appointments:book' %}" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Book an MRI Suite</a>
+                </div>
+            </div>
+
+            <!-- Laboratory Pathology Highlight -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;" class="reveal">
+                <div>
+                    <h2 style="color: var(--primary-dark); font-size: 2.5rem; margin-bottom: 1.5rem;">Clinical Laboratory</h2>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2.5rem; line-height: 1.8;">Equipped with robotics and automation, our 24/7 clinical laboratory offers an extensive array of rapid blood tests, pathology screenings, and microbiological diagnostics. We deliver the precision doctors trust and the speed patients expect.</p>
+                    <a href="{% url 'appointments:book' %}" class="btn btn-outline" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Schedule Lab Test</a>
+                </div>
+                <img src="{% static 'images/laboratory_blood_test_1773592372441.png' %}" alt="Laboratory" style="width: 100%; border-radius: 16px; box-shadow: var(--shadow-lg);">
+            </div>
+
+        </div>
+
+        <!-- Dynamic Database Services List -->
+        <div style="margin-top: 8rem; border-top: 2px solid rgba(0,0,0,0.05); padding-top: 6rem;">
+            <h3 style="text-align: center; margin-bottom: 4rem; color: var(--primary-dark); font-size: 2.5rem;" class="reveal">Complete A-Z Services List</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2.5rem;">
+                {% for service in services %}
+                <div class="service-card reveal card" style="background: white; border-radius: 12px; padding: 2.5rem; border: 1px solid #eaeaea; box-shadow: var(--shadow-sm); transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 1.5rem;">
+                            <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--bg-light); display: flex; align-items: center; justify-content: center; color: var(--primary-color); overflow: hidden;">
+                                {% if service.image %}
+                                <img src="{{ service.image.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                <i class="fa-solid fa-flask" style="font-size: 1.8rem;"></i>
+                                {% endif %}
+                            </div>
+                            <h4 style="font-size: 1.4rem; color: var(--text-main);">{{ service.name }}</h4>
+                        </div>
+                        <div style="background: var(--bg-light); color: var(--primary-dark); font-weight: 700; padding: 0.5rem 1rem; border-radius: 50px; font-size: 1.1rem;">
+                            ${{ service.price }}
+                        </div>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 1.05rem; flex: 1; line-height: 1.6;">{{ service.description }}</p>
+                    <a href="{% url 'appointments:book' %}" class="btn btn-outline" style="margin-top: 1.5rem; text-align: center; width: 100%;">Enquire Now</a>
+                </div>
+                {% empty %}
+                <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); font-size: 1.2rem;">Additional clinical services will be listed soon.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

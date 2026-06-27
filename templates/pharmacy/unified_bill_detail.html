@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Unified Bill #{{ bill.id }} - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: var(--primary-dark); color: white; padding: 4rem 2rem; text-align: center;">
+    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-file-invoice-dollar"></i> Bill #{{ bill.id }}</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9;">Patient: {{ bill.patient.user.get_full_name|default:bill.patient.user.username }} | Date: {{ bill.date|date:"M d, Y" }}</p>
+</section>
+
+<section style="padding: 4rem 2rem; background: var(--bg-light); min-height: 50vh;">
+    <div class="container" style="max-width: 800px; background: white; padding: 3rem; border-radius: 12px; box-shadow: var(--shadow-md);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #f0f0f0;">
+            <div>
+                <h3 style="margin: 0; color: var(--primary-dark);">Invoice Details</h3>
+                <p style="margin: 0; color: var(--text-muted);">Status: 
+                    {% if bill.is_paid %}
+                    <span style="color: var(--success); font-weight: bold;"><i class="fa-solid fa-check-circle"></i> Paid</span>
+                    {% else %}
+                    <span style="color: var(--danger); font-weight: bold;"><i class="fa-solid fa-clock"></i> Unpaid</span>
+                    {% endif %}
+                </p>
+            </div>
+            {% if bill.appointment %}
+            <div style="text-align: right;">
+                <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Consultation with Dr. {{ bill.appointment.doctor.user.get_full_name|default:bill.appointment.doctor.user.username }}</p>
+                <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Department: {{ bill.appointment.doctor.department.name }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if bill.appointment and bill.appointment.prescribed_medicines.all %}
+        <div style="margin-bottom: 2rem;">
+            <h4 style="color: var(--primary); margin-bottom: 1rem;">Prescribed Medicines</h4>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 1rem;">
+                <tr style="border-bottom: 1px solid #eee; text-align: left;">
+                    <th style="padding: 0.5rem; color: var(--text-muted);">Medicine</th>
+                    <th style="padding: 0.5rem; color: var(--text-muted);">Qty</th>
+                    <th style="padding: 0.5rem; color: var(--text-muted);">Price</th>
+                    <th style="padding: 0.5rem; color: var(--text-muted); text-align: right;">Subtotal</th>
+                </tr>
+                {% for item in bill.appointment.prescribed_medicines.all %}
+                <tr style="border-bottom: 1px solid #f9f9f9;">
+                    <td style="padding: 0.75rem 0.5rem;">
+                        <strong>{{ item.medicine.name }}</strong><br>
+                        <small style="color: #888;">{{ item.dosage_instructions }}</small>
+                    </td>
+                    <td style="padding: 0.75rem 0.5rem;">{{ item.quantity }}</td>
+                    <td style="padding: 0.75rem 0.5rem;">${{ item.medicine.price }}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">
+                        ${% widthratio item.medicine.price 1 item.quantity %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="color: var(--text-muted);">Total Medicine Cost:</span>
+                <strong>${{ bill.total_medicine_cost }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid #ddd; padding-bottom: 1rem;">
+                <span style="color: var(--text-muted);">Consultation Fee:</span>
+                <strong>${{ bill.total_consultation_cost }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary-dark);">Grand Total:</span>
+                <span style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">${{ bill.grand_total }}</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; text-align: center; display: flex; gap: 1rem; justify-content: center;">
+            <a href="javascript:history.back()" class="btn btn-outline" style="padding: 0.75rem 2rem; border-radius: 6px;"><i class="fa-solid fa-arrow-left"></i> Back</a>
+            
+            {% if not bill.is_paid %}
+            <form action="{% url 'pharmacy:pay_unified_bill' bill.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem; border-radius: 6px; background: var(--success); border-color: var(--success);"><i class="fa-solid fa-credit-card"></i> Pay Now</button>
+            </form>
+            {% endif %}
+            
+            <button onclick="window.print()" class="btn btn-outline" style="padding: 0.75rem 2rem; border-radius: 6px;"><i class="fa-solid fa-print"></i> Print</button>
+        </div>
+    </div>
+</section>
+
+<style>
+    @media print {
+        body * { visibility: hidden; }
+        .container, .container * { visibility: visible; }
+        .container { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; padding: 0 !important; }
+        .btn { display: none !important; }
+    }
+</style>
+{% endblock %}

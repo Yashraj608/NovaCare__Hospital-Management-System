@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Pharmacist Dashboard - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: var(--primary-dark); color: white; padding: 4rem 2rem; text-align: center;">
+    <h1 class="reveal" style="font-size: 2.8rem; margin-bottom: 0.5rem;">Pharmacist Dashboard</h1>
+    <p class="reveal" style="font-size: 1.2rem; opacity: 0.9;">Manage pharmacy stock, billing, and medicines.</p>
+</section>
+
+<section style="padding: 4rem 2rem; background: var(--bg-light); min-height: 50vh;">
+    <div class="container reveal">
+        
+        <div style="display: flex; gap: 2rem; margin-bottom: 3rem;">
+            <div style="flex: 1; background: white; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-sm); text-align: center;">
+                <h3 style="color: var(--text-muted);">Total Medicines</h3>
+                <p style="font-size: 2.5rem; font-weight: bold; color: var(--primary);">{{ total_medicines }}</p>
+                <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1.5rem;">
+                    <a href="{% url 'pharmacy:medicine_list' %}" class="btn" style="background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none;">View Full Inventory</a>
+                    <a href="{% url 'pharmacy:medicine_add' %}" class="btn" style="background: var(--success); color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none;">+ Add Medicine</a>
+                </div>
+            </div>
+            <div style="flex: 1; background: white; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-sm); text-align: center;">
+                <h3 style="color: var(--text-muted);">Total Bills</h3>
+                <p style="font-size: 2.5rem; font-weight: bold; color: var(--secondary-color);">{{ total_bills }}</p>
+                <a href="{% url 'pharmacy:billing_pos' %}" class="btn" style="background: var(--secondary-color); color: white; padding: 0.5rem 1rem; border-radius: 6px; margin-top: 1rem; display: inline-block;">New Bill (POS)</a>
+            </div>
+        </div>
+
+        <h2 style="color: var(--primary-dark); font-size: 2rem; margin-bottom: 1.5rem;">Low Stock Alerts</h2>
+        <div style="background: #fff3cd; color: #856404; border-radius: 12px; padding: 1.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm);">
+            {% if low_stock %}
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for item in low_stock %}
+                    <li style="padding: 0.5rem 0; border-bottom: 1px solid #ffeeba;"><strong>{{ item.name }}</strong> - Only {{ item.stock_quantity }} left!</li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p style="margin: 0;">All medicines are well-stocked.</p>
+            {% endif %}
+        </div>
+
+        <h2 style="color: var(--primary-dark); font-size: 2rem; margin-bottom: 1.5rem;">Recent Bills</h2>
+        <div style="background: white; border-radius: 12px; box-shadow: var(--shadow-sm); overflow: hidden;">
+            {% if recent_bills %}
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead style="background: var(--secondary-color); color: white;">
+                        <tr>
+                            <th style="padding: 1.2rem; text-align: left;">Bill ID</th>
+                            <th style="padding: 1.2rem; text-align: left;">Date</th>
+                            <th style="padding: 1.2rem; text-align: left;">Patient</th>
+                            <th style="padding: 1.2rem; text-align: right;">Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bill in recent_bills %}
+                        <tr style="border-bottom: 1px solid #eaeaea;">
+                            <td style="padding: 1.2rem;">#{{ bill.id }}</td>
+                            <td style="padding: 1.2rem;">{{ bill.date|date:"M d, Y H:i" }}</td>
+                            <td style="padding: 1.2rem;">{{ bill.patient_name }}</td>
+                            <td style="padding: 1.2rem; text-align: right;">${{ bill.total_amount }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">No bills generated yet.</div>
+            {% endif %}
+        </div>
+        
+    </div>
+</section>
+{% endblock %}

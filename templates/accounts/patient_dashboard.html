@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Patient Dashboard - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: var(--primary-color); color: white; padding: 4rem 2rem; text-align: center;">
+    <h1 class="reveal" style="font-size: 2.8rem; margin-bottom: 0.5rem;">Welcome, {{ user.first_name|default:user.username }}</h1>
+    <p class="reveal" style="font-size: 1.2rem; opacity: 0.9;">Manage your health journey with NovaCare.</p>
+</section>
+
+<section style="padding: 4rem 2rem; background: var(--bg-light); min-height: 50vh;">
+    <div class="container reveal">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <h2 style="color: var(--primary-dark); font-size: 2rem;">Your Dashboard</h2>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a href="{% url 'pharmacy:expenditure_history' %}" class="btn btn-outline" style="background: white;"><i class="fa-solid fa-clock-rotate-left"></i> Payment History</a>
+                <a href="{% url 'pharmacy:view_cart' %}" class="btn btn-outline" style="border-color: var(--primary); color: var(--primary); background: white;"><i class="fa-solid fa-cart-shopping"></i> Pharmacy Cart</a>
+                <a href="{% url 'appointments:book' %}" class="btn btn-primary"><i class="fa-solid fa-calendar-plus"></i> Book New Appointment</a>
+            </div>
+        </div>
+
+        <h3 style="color: var(--text-main); font-size: 1.3rem; margin-bottom: 1rem;">Appointments</h3>
+
+        <div style="background: white; border-radius: 12px; box-shadow: var(--shadow-sm); overflow: hidden;">
+            {% if appointments %}
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead style="background: var(--primary-dark); color: white;">
+                        <tr>
+                            <th style="padding: 1.2rem; text-align: left;">Doctor</th>
+                            <th style="padding: 1.2rem; text-align: left;">Department</th>
+                            <th style="padding: 1.2rem; text-align: left;">Date & Time</th>
+                            <th style="padding: 1.2rem; text-align: left;">Status</th>
+                            <th style="padding: 1.2rem; text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in appointments %}
+                        <tr style="border-bottom: 1px solid #eaeaea; transition: background 0.3s; cursor: default;">
+                            <td style="padding: 1.2rem;">Dr. {{ appt.doctor.user.get_full_name }}</td>
+                            <td style="padding: 1.2rem;">{{ appt.doctor.department.name|default:"General" }}</td>
+                            <td style="padding: 1.2rem;">{{ appt.date|date:"M d, Y" }} at {{ appt.time|time:"h:i A" }}</td>
+                            <td style="padding: 1.2rem;">
+                                {% if appt.status == 'Pending' %}
+                                    <span style="background: #fff3cd; color: #856404; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.9rem; font-weight: 500;">Pending</span>
+                                {% elif appt.status == 'Confirmed' %}
+                                    <span style="background: #d4edda; color: #155724; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.9rem; font-weight: 500;">Confirmed</span>
+                                {% elif appt.status == 'Completed' %}
+                                    <span style="background: #cce5ff; color: #004085; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.9rem; font-weight: 500;">Completed</span>
+                                {% else %}
+                                    <span style="background: #f8d7da; color: #721c24; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.9rem; font-weight: 500;">Cancelled</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 1.2rem; text-align: right;">
+                                {% if appt.status == 'Completed' %}
+                                    <a href="{% url 'appointments:appointment_detail' appt.id %}" class="btn" style="background: var(--primary); color: white; padding: 0.4rem 0.8rem; font-size: 0.9rem; border-radius: 6px;"><i class="fa-solid fa-prescription"></i> View Prescription</a>
+                                    {% if not appt.is_paid %}
+                                        {% if appt.unifiedbill %}
+                                        <a href="{% url 'pharmacy:unified_bill_detail' appt.unifiedbill.id %}" class="btn" style="background: var(--success); color: white; padding: 0.4rem 0.8rem; font-size: 0.9rem; border-radius: 6px; margin-left: 0.5rem;"><i class="fa-solid fa-credit-card"></i> Pay Bill</a>
+                                        {% endif %}
+                                    {% else %}
+                                        <span style="color: var(--success); font-weight: 500; font-size: 0.9rem; margin-left: 0.5rem;"><i class="fa-solid fa-check-double"></i> Paid</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span style="color: var(--text-muted); font-style: italic;">N/A</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="padding: 4rem; text-align: center;">
+                    <i class="fa-regular fa-calendar-xmark" style="font-size: 4rem; color: #d1d5db; margin-bottom: 1rem;"></i>
+                    <h3 style="color: var(--text-muted); margin-bottom: 1rem;">No appointments found.</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">It looks like you don't have any upcoming or past appointments.</p>
+                    <a href="{% url 'appointments:book' %}" class="btn btn-outline">Book an Appointment</a>
+                </div>
+            {% endif %}
+        </div>
+        
+    </div>
+</section>
+{% endblock %}

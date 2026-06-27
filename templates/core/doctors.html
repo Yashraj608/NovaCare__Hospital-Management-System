@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Find a Doctor - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header"
+    style="background: linear-gradient(135deg, var(--primary-dark), var(--primary-color)); color: white; padding: 5rem 2rem; text-align: center;">
+    <h1 class="reveal" style="font-size: 3.5rem; margin-bottom: 1rem;">Our Medical Experts</h1>
+    <p class="reveal" style="font-size: 1.3rem; max-width: 650px; margin: 0 auto; opacity: 0.95;">Search our world-class
+        directory to find the right specialist for your healthcare needs.</p>
+</section>
+
+<!-- Search Section -->
+<section
+    style="background: var(--white); padding: 3rem 2rem; border-bottom: 1px solid #eaeaea; box-shadow: var(--shadow-sm);">
+    <div class="container reveal">
+        <form method="get" action="{% url 'core:doctors' %}"
+            style="display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; align-items: center;">
+            <input type="text" name="search" placeholder="Search by doctor's name..." value="{{ request.GET.search }}"
+                style="padding: 1.2rem; border-radius: 12px; border: 1px solid #d1d5db; width: 100%; max-width: 450px; font-size: 1.1rem; background: var(--bg-light);">
+            <input type="text" name="department" placeholder="Specialization (e.g. Cardiology)"
+                value="{{ request.GET.department }}"
+                style="padding: 1.2rem; border-radius: 12px; border: 1px solid #d1d5db; width: 100%; max-width: 350px; font-size: 1.1rem; background: var(--bg-light);">
+            <button type="submit" class="btn btn-primary"
+                style="padding: 1.2rem 3rem; border-radius: 12px; font-size: 1.1rem;"><i class="fa-solid fa-search"></i>
+                Search</button>
+            <a href="{% url 'core:doctors' %}" class="btn btn-outline"
+                style="padding: 1.2rem 2rem; border-radius: 12px; font-size: 1.1rem;">Clear</a>
+
+            {% if request.user.is_staff %}
+            <a href="{% url 'core:add_doctor' %}" class="btn btn-primary"
+                style="padding: 1.2rem 2rem; border-radius: 12px; font-size: 1.1rem; background: var(--secondary-color); border-color: var(--secondary-color);"><i
+                    class="fa-solid fa-user-plus"></i> Add Doctor</a>
+            {% endif %}
+        </form>
+    </div>
+</section>
+
+<!-- Doctors List -->
+<section style="padding: 6rem 2rem; background: var(--bg-light);">
+    <div class="container">
+        <!-- Department Filters -->
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 3rem;"
+            class="reveal">
+            <a href="{% url 'core:doctors' %}{% if request.GET.search %}?search={{ request.GET.search }}{% endif %}"
+                class="btn"
+                style="border-radius: 50px; padding: 0.6rem 1.5rem; {% if not active_department %}background: var(--primary-color); color: white;{% else %}background: white; color: var(--text-main); border: 1px solid #d1d5db;{% endif %}">
+                All Specialties
+            </a>
+            {% for dept in departments %}
+            <a href="{% url 'core:doctors' %}?department={{ dept.name }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                class="btn"
+                style="border-radius: 50px; padding: 0.6rem 1.5rem; {% if active_department == dept.name %}background: var(--primary-color); color: white;{% else %}background: white; color: var(--text-main); border: 1px solid #d1d5db;{% endif %}">
+                {{ dept.name }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 3.5rem;">
+            {% for doctor in doctors %}
+            <div class="doctor-card reveal card"
+                style="background: white; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md); transition: transform 0.3s, box-shadow 0.3s; padding: 2.5rem; text-align: center;">
+                <div
+                    style="width: 140px; height: 140px; border-radius: 50%; background: var(--bg-light); margin: 0 auto 2rem auto; display: flex; align-items: center; justify-content: center; color: var(--primary-color); border: 4px solid var(--white); box-shadow: var(--shadow-sm);">
+                    {% if doctor.profile_picture %}
+                    <img src="{{ doctor.profile_picture.url }}"
+                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    {% else %}
+                    <i class="fa-solid fa-user-doctor" style="font-size: 4rem;"></i>
+                    {% endif %}
+                </div>
+                <h3 style="color: var(--primary-dark); font-size: 1.7rem; margin-bottom: 0.5rem;">Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</h3>
+                <h4 style="color: var(--secondary-color); font-weight: 600; font-size: 1.1rem; margin-bottom: 1.5rem;">{{ doctor.department.name|default:"General Medicine" }}</h4>
+                <div
+                    style="text-align: left; margin-bottom: 2rem; color: var(--text-main); font-size: 1.05rem; background: var(--bg-light); padding: 1.5rem; border-radius: 12px;">
+                    <p style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.8rem;"><i
+                            class="fa-solid fa-star" style="color: var(--warning); font-size: 1.2rem;"></i> {{ doctor.experience_years }} Years Experience</p>
+                    <p style="margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.8rem;"><i
+                            class="fa-solid fa-wallet" style="color: var(--success); font-size: 1.2rem;"></i> Fee: ${{ doctor.consultation_fee }}</p>
+                    <p style="display: flex; align-items: center; gap: 0.8rem;"><i class="fa-regular fa-clock"
+                            style="color: var(--primary-color); font-size: 1.2rem;"></i> {{ doctor.availability|default:"Contact for hours" }}</p>
+                </div>
+                {% if not request.user.is_staff %}
+                <a href="{% url 'appointments:book' %}?doc={{ doctor.id }}" class="btn btn-primary"
+                    style="width: 100%; padding: 1rem; font-size: 1.1rem; margin-bottom: 0.5rem; flex: none;">Book Appointment</a>
+                {% endif %}
+                {% if request.user.is_staff %}
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <a href="{% url 'core:edit_doctor' doctor.id %}" class="btn" style="flex: 1; padding: 0.8rem; background: var(--secondary-color); color: white; border-radius: 6px; text-align: center;"><i class="fa-solid fa-pen-to-square"></i> Edit</a>
+                    
+                    <form method="post" action="{% url 'core:delete_doctor' doctor.id %}" onsubmit="return confirm('Are you sure you want to permanently delete Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}?');" style="flex: 1; display: flex;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn" style="width: 100%; padding: 0.8rem; background: var(--danger); color: white; border: none; border-radius: 6px; cursor: pointer;"><i class="fa-solid fa-trash-can"></i> Delete</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div
+                style="grid-column: 1/-1; text-align: center; padding: 6rem; background: white; border-radius: 16px; box-shadow: var(--shadow-sm);">
+                <i class="fa-solid fa-user-nurse" style="font-size: 5rem; color: #d1d5db; margin-bottom: 1.5rem;"></i>
+                <h3 style="color: var(--text-muted); font-size: 1.5rem;">No doctors found matching your criteria.</h3>
+                <a href="{% url 'core:doctors' %}" class="btn btn-outline" style="margin-top: 1.5rem;">View All
+                    Doctors</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

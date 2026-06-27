@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Patient Medical History - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: var(--text-main); color: white; padding: 4rem 2rem; text-align: center;">
+    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-file-medical"></i> Medical History</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9;">Patient: {{ patient.user.get_full_name|default:patient.user.username }}</p>
+</section>
+
+<section style="padding: 4rem 2rem; background: var(--bg-light); min-height: 50vh;">
+    <div class="container" style="max-width: 900px;">
+        
+        <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="color: var(--primary-dark); font-size: 1.8rem;">Past Consultations</h2>
+            <a href="{% url 'accounts:doctor_dashboard' %}" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+
+        {% if history %}
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                {% for record in history %}
+                <div style="background: white; border-radius: 12px; box-shadow: var(--shadow-sm); overflow: hidden;">
+                    <div style="background: var(--primary-dark); color: white; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-weight: bold; font-size: 1.1rem;">
+                            <i class="fa-regular fa-calendar"></i> {{ record.date|date:"F d, Y" }}
+                        </div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">
+                            Attending: Dr. {{ record.doctor.user.last_name }}
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 2rem;">
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.5rem; letter-spacing: 1px;">Symptoms</h4>
+                            <p style="color: var(--text-main); margin: 0;">{{ record.symptoms }}</p>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px dashed #eaeaea;">
+                            <div>
+                                <h4 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.5rem; letter-spacing: 1px;">Diagnosis</h4>
+                                <p style="color: var(--danger); font-weight: bold; margin: 0; font-size: 1.1rem;">{{ record.disease_diagnosis|default:"Not Recorded" }}</p>
+                            </div>
+                            <div>
+                                <h4 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.5rem; letter-spacing: 1px;">Fee Status</h4>
+                                {% if record.is_paid %}
+                                <span style="color: var(--success); font-weight: bold;"><i class="fa-solid fa-check-double"></i> Paid (${{ record.doctor.consultation_fee }})</span>
+                                {% else %}
+                                <span style="color: var(--text-muted);"><i class="fa-solid fa-clock"></i> Pending Payment</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.5rem; letter-spacing: 1px;">General Notes / Prescription</h4>
+                            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; border-left: 4px solid var(--success);">
+                                {{ record.prescription|linebreaksbr|default:"No general notes." }}
+                            </div>
+                        </div>
+                        
+                        {% if record.prescribed_medicines.all %}
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.5rem; letter-spacing: 1px;">Pharmacy Medicines Prescribed</h4>
+                            <div style="background: white; border: 1px solid #eaeaea; border-radius: 8px;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                                    <thead style="background: #f8f9fa; color: var(--text-muted);">
+                                        <tr>
+                                            <th style="padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eaeaea;">Medicine</th>
+                                            <th style="padding: 0.75rem 1rem; text-align: center; border-bottom: 1px solid #eaeaea;">Quantity</th>
+                                            <th style="padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eaeaea;">Dosage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pm in record.prescribed_medicines.all %}
+                                        <tr>
+                                            <td style="padding: 0.75rem 1rem; border-bottom: 1px solid #f8f9fa;"><strong>{{ pm.medicine.name }}</strong></td>
+                                            <td style="padding: 0.75rem 1rem; text-align: center; border-bottom: 1px solid #f8f9fa;">{{ pm.quantity }}</td>
+                                            <td style="padding: 0.75rem 1rem; border-bottom: 1px solid #f8f9fa; color: #555;">{{ pm.dosage_instructions|default:"—" }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if record.test_reports %}
+                        <div>
+                            <h4 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.5rem; letter-spacing: 1px;">Test Reports</h4>
+                            <p style="color: var(--text-main); margin: 0;">{{ record.test_reports|linebreaksbr }}</p>
+                        </div>
+                        {% endif %}
+                        
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="background: white; border-radius: 12px; box-shadow: var(--shadow-sm); padding: 4rem; text-align: center;">
+                <i class="fa-solid fa-folder-open" style="font-size: 4rem; color: #d1d5db; margin-bottom: 1rem;"></i>
+                <h3 style="color: var(--text-muted);">No Past Medical History.</h3>
+                <p style="color: var(--text-muted);">This patient doesn't have any completed consultations yet.</p>
+            </div>
+        {% endif %}
+        
+    </div>
+</section>
+{% endblock %}

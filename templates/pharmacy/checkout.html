@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}Checkout - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: var(--text-main); color: white; padding: 4rem 2rem; text-align: center;">
+    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-file-invoice"></i> Unified Checkout</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9;">Securely pay for your pharmacy medicines and pending consultation fees together.</p>
+</section>
+
+<section style="padding: 4rem 2rem; background: var(--bg-light); min-height: 50vh;">
+    <div class="container" style="max-width: 900px; display: grid; grid-template-columns: 1fr 350px; gap: 2rem;">
+        
+        <!-- Order Breakdown -->
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+            
+            <!-- Pharmacy Items -->
+            {% if cart_items %}
+            <div style="background: white; border-radius: 12px; box-shadow: var(--shadow-sm); padding: 2rem;">
+                <h3 style="color: var(--primary-dark); margin-bottom: 1.5rem; border-bottom: 1px solid #eaeaea; padding-bottom: 0.5rem;"><i class="fa-solid fa-pills" style="color: var(--primary-color);"></i> Pharmacy Order</h3>
+                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem;">
+                    {% for item in cart_items %}
+                    <li style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 500; color: var(--text-main);">{{ item.quantity }}x {{ item.medicine.name }}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">${{ item.medicine.price }} each</div>
+                        </div>
+                        <div style="font-weight: bold; color: var(--primary-dark);">${% widthratio item.medicine.price 1 item.quantity %}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div style="margin-top: 1.5rem; text-align: right; font-weight: 600; color: var(--text-main); border-top: 1px dashed #eaeaea; padding-top: 1rem;">
+                    Pharmacy Subtotal: <span style="color: var(--primary-dark); margin-left: 0.5rem;">${{ total_medicine_cost }}</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Consultation Fees -->
+            {% if unpaid_appointments %}
+            <div style="background: white; border-radius: 12px; box-shadow: var(--shadow-sm); padding: 2rem;">
+                <h3 style="color: var(--primary-dark); margin-bottom: 1.5rem; border-bottom: 1px solid #eaeaea; padding-bottom: 0.5rem;"><i class="fa-solid fa-user-doctor" style="color: var(--secondary-color);"></i> Pending Consultations</h3>
+                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem;">
+                    {% for appt in unpaid_appointments %}
+                    <li style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <div style="font-weight: 500; color: var(--text-main);">Dr. {{ appt.doctor.user.last_name }} Consultation</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">{{ appt.date }} at {{ appt.time }}</div>
+                        </div>
+                        <div style="font-weight: bold; color: var(--primary-dark);">${{ appt.doctor.consultation_fee }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div style="margin-top: 1.5rem; text-align: right; font-weight: 600; color: var(--text-main); border-top: 1px dashed #eaeaea; padding-top: 1rem;">
+                    Consultation Subtotal: <span style="color: var(--primary-dark); margin-left: 0.5rem;">${{ total_consultation_cost }}</span>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if not cart_items and not unpaid_appointments %}
+            <div style="background: white; border-radius: 12px; box-shadow: var(--shadow-sm); padding: 4rem 2rem; text-align: center;">
+                <i class="fa-solid fa-check-circle" style="font-size: 4rem; color: var(--success); margin-bottom: 1rem;"></i>
+                <h3 style="color: var(--primary-dark);">You're all caught up!</h3>
+                <p style="color: var(--text-muted);">You have no pending items in your cart nor unpaid consultation fees.</p>
+                <a href="{% url 'core:home' %}" class="btn btn-outline" style="margin-top: 1rem;">Return Home</a>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- Payment Summary Panel -->
+        {% if cart_items or unpaid_appointments %}
+        <div>
+            <div style="background: var(--primary-dark); color: white; border-radius: 12px; box-shadow: var(--shadow-lg); padding: 2rem; position: sticky; top: 120px;">
+                <h3 style="margin-bottom: 1.5rem; font-size: 1.4rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.2);">Bill Summary</h3>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; opacity: 0.9;">
+                    <span>Pharmacy:</span>
+                    <span>${{ total_medicine_cost }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; opacity: 0.9;">
+                    <span>Consultations:</span>
+                    <span>${{ total_consultation_cost }}</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2); font-size: 1.4rem; font-weight: bold;">
+                    <span>Total Due:</span>
+                    <span style="color: var(--secondary-color);">${{ grand_total }}</span>
+                </div>
+
+                <form method="post" action="{% url 'pharmacy:checkout' %}" style="margin-top: 2.5rem;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn" style="width: 100%; padding: 1.2rem; background: var(--secondary-color); color: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem; border: none; cursor: pointer; transition: transform 0.2s;"><i class="fa-solid fa-lock" style="margin-right: 0.5rem;"></i> Pay Securely Now</button>
+                    <div style="text-align: center; margin-top: 1rem; font-size: 0.8rem; opacity: 0.7;">
+                        <i class="fa-brands fa-cc-stripe" style="font-size: 1.5rem;"></i>
+                        <p style="margin-top: 0.2rem;">Processed via dummy payment gateway.</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

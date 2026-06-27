@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Add Consultation Notes - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: var(--primary-dark); color: white; padding: 4rem 2rem; text-align: center;">
+    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-notes-medical"></i> Consultation Notes</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9;">Patient: {{ appointment.patient.user.get_full_name|default:appointment.patient.user.username }}</p>
+</section>
+
+<section style="padding: 4rem 2rem; background: var(--bg-light); min-height: 50vh;">
+    <div class="container" style="max-width: 800px; background: white; padding: 3rem; border-radius: 12px; box-shadow: var(--shadow-md);">
+        
+        <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f8f9fa; border-left: 4px solid var(--secondary-color); border-radius: 4px;">
+            <h4 style="margin-top: 0; color: var(--primary-dark);">Appointment Details</h4>
+            <p style="margin-bottom: 0.5rem;"><strong>Date & Time:</strong> {{ appointment.date }} at {{ appointment.time }}</p>
+            <p style="margin-bottom: 0;"><strong>Symptoms:</strong> {{ appointment.symptoms }}</p>
+        </div>
+
+        <form method="post" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            {% csrf_token %}
+            
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-main);">Diagnosis</label>
+                <input type="text" name="disease_diagnosis" value="{{ appointment.disease_diagnosis|default:'' }}" placeholder="e.g., Acute Bronchitis" style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none;" required>
+            </div>
+            
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-main);">General Prescription / Notes</label>
+                <textarea name="prescription" rows="2" placeholder="General instructions or outside medications..." style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none; resize: vertical;">{{ appointment.prescription|default:'' }}</textarea>
+            </div>
+            
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-main);">Prescribe Pharmacy Medicines</label>
+                <div id="medicine-list" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;">
+                    <!-- JS will insert rows here -->
+                </div>
+                <button type="button" id="add-medicine-btn" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.9rem; border-radius: 6px;"><i class="fa-solid fa-plus"></i> Add Medicine</button>
+            </div>
+            
+            <div style="display: none;" id="medicine-template">
+                <div class="medicine-row" style="display: flex; gap: 1rem; align-items: flex-end; background: #f8f9fa; padding: 1rem; border-radius: 8px; border: 1px solid #eee;">
+                    <div style="flex: 2;">
+                        <label style="font-size: 0.85rem; font-weight: 600; color: #555;">Medicine</label>
+                        <select name="medicine[]" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; outline: none; background: white;">
+                            <option value="">-- Select Medicine --</option>
+                            {% for med in medicines %}
+                            <option value="{{ med.id }}">{{ med.name }} - {{ med.formula }} (Stock: {{ med.stock_quantity }}, Price: ${{ med.price }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.85rem; font-weight: 600; color: #555;">Quantity</label>
+                        <input type="number" name="quantity[]" min="1" value="1" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; outline: none;">
+                    </div>
+                    <div style="flex: 2;">
+                        <label style="font-size: 0.85rem; font-weight: 600; color: #555;">Dosage</label>
+                        <input type="text" name="dosage[]" placeholder="e.g. 1 tab after meal" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; outline: none;">
+                    </div>
+                    <div>
+                        <button type="button" class="remove-btn" style="padding: 0.75rem; background: #ffebee; color: #d32f2f; border: none; border-radius: 6px; cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-main);">Lab Tests / Reports (Optional)</label>
+                <textarea name="test_reports" rows="3" placeholder="Notes on required lab tests or test results..." style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none; resize: vertical;">{{ appointment.test_reports|default:'' }}</textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                <a href="{% url 'accounts:doctor_dashboard' %}" class="btn btn-outline" style="padding: 1rem 2rem; border-radius: 8px;">Cancel</a>
+                <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; border-radius: 8px; background: var(--success); border-color: var(--success);"><i class="fa-solid fa-check"></i> Save & Complete</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addBtn = document.getElementById('add-medicine-btn');
+        const list = document.getElementById('medicine-list');
+        const template = document.getElementById('medicine-template').innerHTML;
+
+        addBtn.addEventListener('click', function() {
+            const div = document.createElement('div');
+            div.innerHTML = template;
+            list.appendChild(div.firstElementChild);
+        });
+
+        list.addEventListener('click', function(e) {
+            if(e.target.closest('.remove-btn')) {
+                e.target.closest('.medicine-row').remove();
+            }
+        });
+        
+        // Add one empty row by default
+        addBtn.click();
+    });
+</script>
+{% endblock %}

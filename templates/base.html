@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NovaCare Hospital{% endblock %}</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar glass-nav">
+        <div class="nav-container">
+            <a href="{% url 'core:home' %}" class="nav-logo">
+                <i class="fa-solid fa-heart-pulse"></i> NovaCare
+            </a>
+            <ul class="nav-links">
+                <li><a href="{% url 'core:home' %}">Home</a></li>
+                <li><a href="{% url 'core:services' %}">Services</a></li>
+                {% if not user.is_doctor %}
+                <li><a href="{% url 'pharmacy:public_list' %}">Pharmacy</a></li>
+                <li><a href="{% url 'core:doctors' %}">Doctors</a></li>
+                {% endif %}
+
+                <li><a href="{% url 'core:about' %}">About Us</a></li>
+                <li><a href="{% url 'core:contact' %}">Contact</a></li>
+            </ul>
+            <div class="nav-actions" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                {% if user.is_authenticated %}
+                <span class="user-greeting" style="white-space: nowrap; margin-right: 0.25rem;">Hi, {{ user.get_short_name|default:user.username }}</span>
+                {% if user.is_doctor %}
+                <a href="{% url 'accounts:doctor_dashboard' %}" class="btn btn-outline" style="padding: 0.4rem 0.6rem; font-size: 0.9rem; border-color: var(--secondary-color); color: var(--secondary-color);"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+                {% endif %}
+                {% if user.is_pharmacist %}
+                <a href="{% url 'pharmacy:medicine_list' %}" class="btn btn-outline" style="padding: 0.4rem 0.6rem; font-size: 0.9rem; background: var(--success); color: white; border-color: var(--success);"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
+                <a href="{% url 'pharmacy:pharmacist_dashboard' %}" class="btn btn-outline" style="padding: 0.4rem 0.6rem; font-size: 0.9rem;"><i class="fa-solid fa-table-columns"></i> Dash</a>
+                {% endif %}
+                {% if user.is_superuser or user.is_staff %}
+                <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background: var(--primary); border-color: var(--primary);"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+                {% endif %}
+                <a href="{% url 'accounts:logout' %}" class="btn btn-outline" style="padding: 0.4rem 0.6rem; font-size: 0.9rem;" title="Logout"><i class="fa-solid fa-sign-out-alt"></i></a>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Login</a>
+                <a href="{% url 'accounts:register' %}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Register</a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-btn">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Django Messages -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} slide-in">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content Area -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-about">
+                <h3><i class="fa-solid fa-heart-pulse"></i> NovaCare</h3>
+                <p>Providing world-class healthcare with cutting edge technology and compassionate professionals.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="{% url 'core:services' %}">Our Services</a></li>
+                    <li><a href="{% url 'core:doctors' %}">Find a Doctor</a></li>
+                    <li><a href="{% url 'appointments:book' %}">Book Appointment</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>Contact Us</h4>
+                <p><i class="fa-solid fa-phone"></i> +1 (800) 123-4567</p>
+                <p><i class="fa-solid fa-envelope"></i> care@novacare.com</p>
+                <p><i class="fa-solid fa-location-dot"></i> 123 Health Ave, NY</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 NovaCare Hospital. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+
+</html>

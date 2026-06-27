@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Book Appointment - NovaCare{% endblock %}
+
+{% block content %}
+<section style="padding: 6rem 2rem; background: var(--bg-light); min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+    <div class="container reveal" style="max-width: 700px; width: 100%;">
+        <div style="background: white; padding: 4rem 3rem; border-radius: 16px; box-shadow: var(--shadow-lg);">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <i class="fa-regular fa-calendar-check" style="font-size: 3.5rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                <h2 style="color: var(--primary-dark); font-size: 2.2rem;">Book an Appointment</h2>
+                <p style="color: var(--text-muted);">Schedule a visit with one of our specialists.</p>
+            </div>
+            
+            <form method="POST" action="{% url 'appointments:book' %}" style="display: flex; flex-direction: column; gap: 1.8rem;">
+                {% csrf_token %}
+                
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; color: var(--text-main);">Select Doctor</label>
+                    <select name="doctor" required style="padding: 1.2rem; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light); cursor: pointer;">
+                        <option value="">-- Choose a Doctor --</option>
+                        {% for doc in doctors %}
+                            <option value="{{ doc.id }}" {% if selected_doc|add:"0" == doc.id %}selected{% endif %}>
+                                Dr. {{ doc.user.get_full_name|default:doc.user.username }} - {{ doc.department.name|default:"General Medicine" }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-weight: 600; color: var(--text-main);">Select Date</label>
+                        <input type="date" name="date" required min="{% now 'Y-m-d' %}" style="padding: 1.2rem; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light);">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-weight: 600; color: var(--text-main);">Select Time</label>
+                        <input type="time" name="time" required style="padding: 1.2rem; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light);">
+                    </div>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; color: var(--text-main);">Symptoms / Reason for Visit</label>
+                    <textarea name="symptoms" rows="5" required placeholder="Please briefly describe your symptoms or reason for the appointment..." style="padding: 1.2rem; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; resize: vertical; background: var(--bg-light);"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="padding: 1.2rem; font-size: 1.1rem; border-radius: 8px; margin-top: 1rem; font-weight: 600; width: 100%;">Confirm Appointment</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}{{ action }} Department - NovaCare Admin{% endblock %}
+{% block nav_departments %}active{% endblock %}
+{% block header_title %}{{ action }} Department{% endblock %}
+{% block header_subtitle %}{% if action == 'Add' %}Create a new medical department.{% else %}Update details for {{ department.name }}.{% endif %}{% endblock %}
+
+{% block admin_content %}
+<div style="background: white; padding: 2.5rem; border-radius: var(--border-radius); box-shadow: var(--card-shadow); border: 1px solid var(--border); max-width: 600px; margin: 0 auto;">
+    <form method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        {% csrf_token %}
+        
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <label style="font-weight: 600; color: var(--text-main);">Department Name</label>
+            <input type="text" name="name" required value="{{ department.name|default:'' }}" placeholder="e.g. Cardiology" style="padding: 0.8rem 1rem; border-radius: 6px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light);">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <label style="font-weight: 600; color: var(--text-main);">Description</label>
+            <textarea name="description" rows="4" placeholder="Brief description of the department's focus and capabilities..." style="padding: 0.8rem 1rem; border-radius: 6px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light); resize: vertical;">{{ department.description|default:'' }}</textarea>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <label style="font-weight: 600; color: var(--text-main);">Department Icon (Image)</label>
+            {% if department and department.icon %}
+                <div style="margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">Current Icon:</span><br>
+                    <img src="{{ department.icon.url }}" alt="Icon" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; margin-top: 0.3rem;">
+                </div>
+            {% endif %}
+            <input type="file" name="icon" accept="image/*" style="padding: 0.8rem 1rem; border-radius: 6px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light);">
+            <small style="color: var(--text-muted);">Upload a square image. Leave blank to keep current icon (if editing).</small>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <a href="{% url 'accounts:admin_departments' %}" class="btn-outline" style="padding: 0.8rem 1rem; text-align: center; border-radius: 6px; font-weight: 500; flex: 1; text-decoration: none; display: block;">Cancel</a>
+            <button type="submit" class="btn-primary" style="padding: 0.8rem 1rem; border-radius: 6px; font-weight: 500; background: var(--primary); color: white; border: none; cursor: pointer; flex: 2;"><i class="fa-solid fa-save"></i> Save Department</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

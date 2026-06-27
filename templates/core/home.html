@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url({% static 'images/modern_hospital_exterior_1773590818908.png' %}) center/cover; padding: 10rem 2rem; color: white; text-align: center;">
+    <div class="container reveal">
+        <h1 style="font-size: 4rem; margin-bottom: 1.5rem; font-weight: 700;">Welcome to NovaCare Hospital</h1>
+        <p style="font-size: 1.25rem; margin-bottom: 2.5rem; max-width: 700px; margin-left: auto; margin-right: auto;">Providing world-class healthcare with cutting edge technology and compassionate professionals. Your health is our priority.</p>
+        <a href="{% url 'appointments:book' %}" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2.8rem;">Book an Appointment</a>
+        <a href="{% url 'core:doctors' %}" class="btn btn-outline" style="font-size: 1.1rem; padding: 1rem 2.8rem; margin-left: 1rem; color: white; border-color: white; background: rgba(255,255,255,0.1);">Find a Doctor</a>
+    </div>
+</section>
+
+<!-- Departments Highlight -->
+<section class="departments-preview" style="padding: 6rem 2rem; background: var(--white);">
+    <div class="container">
+        <h2 style="text-align: center; margin-bottom: 4rem; color: var(--primary-dark); font-size: 2.5rem;" class="reveal">Our Specialized Departments</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2.5rem;">
+            {% for dept in departments %}
+            <div class="card reveal" style="background: var(--bg-light); border-radius: 12px; padding: 2.5rem; text-align: center; box-shadow: var(--shadow-sm); transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;">
+                <i class="fa-solid fa-stethoscope" style="font-size: 3.5rem; color: var(--secondary-color); margin-bottom: 1.5rem;"></i>
+                <h3 style="margin-bottom: 1rem; color: var(--primary-color); font-size: 1.5rem;">{{ dept.name }}</h3>
+                <p style="color: var(--text-muted); font-size: 1rem;">{{ dept.description|truncatechars:100 }}</p>
+            </div>
+            {% empty %}
+            <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); font-size: 1.2rem;">Departments are currently being updated.</p>
+            {% endfor %}
+        </div>
+        <div style="text-align: center; margin-top: 4rem;">
+            <a href="{% url 'core:services' %}" class="btn btn-outline" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Explore All Services</a>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="why-us" style="padding: 6rem 2rem; background: var(--bg-light);">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;">
+            <div class="reveal">
+                <img src="{% static 'images/doctor_consultation_smiling_1773591303749.png' %}" alt="Smiling Doctor" style="width: 100%; border-radius: 20px; box-shadow: var(--shadow-lg);">
+            </div>
+            <div class="reveal">
+                <h2 style="font-size: 2.8rem; color: var(--primary-dark); margin-bottom: 2rem;">Compassionate Care Built Around You</h2>
+                <ul style="list-style: none; display: flex; flex-direction: column; gap: 1.5rem;">
+                    <li style="display: flex; gap: 1.5rem; align-items: flex-start;">
+                        <i class="fa-solid fa-check-circle" style="color: var(--success); font-size: 1.8rem; margin-top: 0.2rem;"></i>
+                        <div>
+                            <strong style="font-size: 1.3rem; display: block; margin-bottom: 0.3rem;">Expert Medical Professionals</strong>
+                            <p style="color: var(--text-muted); font-size: 1.05rem;">Our doctors are leaders in their respective fields, providing unparalleled expertise.</p>
+                        </div>
+                    </li>
+                    <li style="display: flex; gap: 1.5rem; align-items: flex-start;">
+                        <i class="fa-solid fa-check-circle" style="color: var(--success); font-size: 1.8rem; margin-top: 0.2rem;"></i>
+                        <div>
+                            <strong style="font-size: 1.3rem; display: block; margin-bottom: 0.3rem;">State-of-the-Art Technology</strong>
+                            <p style="color: var(--text-muted); font-size: 1.05rem;">Equipped with the latest medical machinery for precise diagnosis and effective treatment.</p>
+                        </div>
+                    </li>
+                    <li style="display: flex; gap: 1.5rem; align-items: flex-start;">
+                        <i class="fa-solid fa-check-circle" style="color: var(--success); font-size: 1.8rem; margin-top: 0.2rem;"></i>
+                        <div>
+                            <strong style="font-size: 1.3rem; display: block; margin-bottom: 0.3rem;">24/7 Emergency Support</strong>
+                            <p style="color: var(--text-muted); font-size: 1.05rem;">We are always here when you need us the most, with immediate comprehensive care.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

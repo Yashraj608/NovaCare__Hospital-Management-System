@@ -1,0 +1,88 @@
+{% extends 'accounts/admin_base.html' %}
+{% load static %}
+
+{% block title %}Departments | NovaCare Admin{% endblock %}
+{% block nav_departments %}active{% endblock %}
+{% block header_title %}Departments{% endblock %}
+{% block header_subtitle %}Manage hospital departments and specializations.{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Toolbar inside card */
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; }
+    .toolbar-actions { display: flex; gap: 1rem; align-items: center; }
+    .btn-primary { background: var(--primary); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 500; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 6px rgba(26,118,210,0.2); transition: 0.2s; }
+    .btn-primary:hover { background: var(--primary-dark); }
+
+    /* Grid */
+    .dept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+    
+    /* Department Card */
+    .dept-card { border: 1px solid var(--border); border-radius: var(--border-radius); overflow: hidden; background: white; display: flex; flex-direction: column; padding: 1.5rem; box-shadow: var(--card-shadow); transition: transform 0.2s; }
+    .dept-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); border-color: var(--primary-light); }
+    
+    .dept-icon { width: 60px; height: 60px; border-radius: 12px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 1rem; }
+    
+    .dept-name { font-weight: 600; font-size: 1.2rem; color: var(--text-main); margin-bottom: 0.5rem; }
+    .dept-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.4; flex-grow: 1; }
+    
+    .dept-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid #f0f0f0; }
+    .dept-stat { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-main); font-weight: 500; }
+    .dept-stat i { color: var(--text-muted); }
+    
+    .action-icons { display: flex; gap: 0.5rem; }
+    .icon-btn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-decoration: none; }
+    .icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="toolbar">
+    <div>
+        <h3 style="color: var(--text-main); font-size: 1.1rem; font-weight: 600;">All Departments</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">{{ departments.count }} departments in total</p>
+    </div>
+    <div class="toolbar-actions">
+        <a href="{% url 'accounts:admin_add_department' %}" class="btn-primary" style="text-decoration:none;"><i class="fa-solid fa-plus"></i> Add Department</a>
+    </div>
+</div>
+
+<div class="dept-grid">
+    {% for dept in departments %}
+    <div class="dept-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            {% if dept.icon %}
+                <img src="{{ dept.icon.url }}" alt="{{ dept.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 12px; margin-bottom: 1rem;">
+            {% else %}
+                <div class="dept-icon"><i class="fa-solid fa-notes-medical"></i></div>
+            {% endif %}
+            
+            <div class="action-icons">
+                <a href="{% url 'accounts:admin_edit_department' dept.id %}" class="icon-btn" title="Edit"><i class="fa-regular fa-edit"></i></a>
+                <form action="{% url 'accounts:admin_delete_department' dept.id %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete the {{ dept.name }} department?');">
+                    {% csrf_token %}
+                    <button type="submit" class="icon-btn" style="color: #d32f2f;" title="Delete Department"><i class="fa-regular fa-trash-can"></i></button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="dept-name">{{ dept.name }}</div>
+        <div class="dept-desc">
+            {{ dept.description|default:"No description provided for this department."|truncatechars:100 }}
+        </div>
+        
+        <div class="dept-footer">
+            <div class="dept-stat">
+                <i class="fa-solid fa-user-doctor"></i> {{ dept.doctors.count }} Doctors
+            </div>
+            <a href="{% url 'accounts:admin_doctors' %}" style="font-size:0.85rem; color:var(--primary); text-decoration:none; font-weight:500;">View Staff <i class="fa-solid fa-arrow-right" style="font-size:0.7rem; margin-left:3px;"></i></a>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align:center; padding: 3rem; color:var(--text-muted); background: white; border-radius: var(--border-radius); border: 1px solid var(--border);">
+        <i class="fa-solid fa-hospital" style="font-size:3rem;margin-bottom:1rem;color:#ccc;"></i>
+        <p>No departments configured in the system.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

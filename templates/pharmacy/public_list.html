@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Pharmacy - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: url('{% static 'images/pharmacy_banner.png' %}') center/cover no-repeat; color: white; padding: 6rem 2rem; text-align: center; position: relative;">
+    <div style="position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6);"></div>
+    <div style="position: relative; z-index: 1;">
+        <h1 class="reveal" style="font-size: 3.5rem; margin-bottom: 1rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">NovaCare Pharmacy</h1>
+        <p class="reveal" style="font-size: 1.4rem; opacity: 0.9; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">Find your prescribed medicines, usage instructions, and alternatives instantly.</p>
+        
+        <form method="get" action="{% url 'pharmacy:public_list' %}" class="reveal" style="margin-top: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; display: flex;">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search medicines by name..." style="flex: 1; padding: 1rem 1.5rem; font-size: 1.1rem; border: none; border-radius: 50px 0 0 50px; outline: none;">
+            <button type="submit" style="background: var(--secondary-color); color: white; border: none; padding: 1rem 2rem; font-size: 1.1rem; border-radius: 0 50px 50px 0; cursor: pointer; font-weight: bold;"><i class="fa-solid fa-search"></i> Search</button>
+        </form>
+    </div>
+</section>
+
+<section style="padding: 4rem 2rem; background: var(--bg-light); min-height: 50vh;">
+    <div class="container reveal">
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
+            {% for med in medicines %}
+            <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-md); transition: transform 0.3s;">
+                <div style="height: 150px; background: {% if med.image %}url('{{ med.image.url }}'){% else %}var(--primary-dark){% endif %} center/contain no-repeat; display: flex; align-items: center; justify-content: center; position: relative;">
+                    {% if not med.image %}
+                    <i class="fa-solid fa-pills" style="font-size: 4rem; color: rgba(255,255,255,0.2);"></i>
+                    {% endif %}
+                    {% if med.requires_prescription %}
+                    <span style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">Rx Required</span>
+                    {% endif %}
+                </div>
+                <div style="padding: 1.5rem;">
+                    <h3 style="color: var(--primary-dark); font-size: 1.4rem; margin-top: 0; margin-bottom: 0.5rem;">{{ med.name }}</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;"><strong>Formula:</strong> {{ med.formula }}</p>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;"><strong>Usage:</strong> {{ med.usage_instructions|truncatewords:20|default:"Refer to package insert." }}</p>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #eaeaea;">
+                        <div style="font-size: 1.25rem; font-weight: bold; color: var(--primary);">${{ med.price }}</div>
+                        <div>
+                            {% if med.stock_quantity > 0 %}
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+                                <span style="color: #28a745; font-weight: 500;"><i class="fa-solid fa-check-circle"></i> In Stock</span>
+                                {% if request.user.is_authenticated and not request.user.is_staff and not request.user.is_pharmacist %}
+                                <form method="post" action="{% url 'pharmacy:add_to_cart' med.id %}" style="display: flex; gap: 0.5rem; align-items: center;">
+                                    {% csrf_token %}
+                                    <input type="number" name="quantity" value="1" min="1" max="{{ med.stock_quantity }}" style="width: 60px; padding: 0.4rem; border-radius: 4px; border: 1px solid #ccc; outline: none;">
+                                    <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.9rem;"><i class="fa-solid fa-cart-plus"></i> Add</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <span style="color: #dc3545; font-weight: 500;"><i class="fa-solid fa-times-circle"></i> Out of Stock</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: white; border-radius: 12px; box-shadow: var(--shadow-sm);">
+                <i class="fa-solid fa-box-open" style="font-size: 4rem; color: #d1d5db; margin-bottom: 1rem;"></i>
+                <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">No medicines found.</h3>
+                {% if query %}
+                <p style="color: var(--text-muted);">Try a different search term or check back later.</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+    </div>
+</section>
+
+<style>
+    .page-header form input:focus { box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+    .container > div > div:hover { transform: translateY(-5px); }
+</style>
+{% endblock %}

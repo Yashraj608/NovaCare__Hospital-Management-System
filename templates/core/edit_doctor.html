@@ -1,0 +1,83 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Edit Doctor - NovaCare Admin{% endblock %}
+{% block nav_doctors %}active{% endblock %}
+
+{% block admin_content %}
+<section style="padding: 6rem 2rem; background: var(--bg-light); min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+    <div class="container reveal" style="max-width: 700px; width: 100%;">
+        <div style="background: white; padding: 4rem 3rem; border-radius: 16px; box-shadow: var(--shadow-lg);">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <i class="fa-solid fa-user-pen" style="font-size: 3.5rem; color: var(--secondary-color); margin-bottom: 1rem;"></i>
+                <h2 style="color: var(--primary-dark); font-size: 2.2rem;">Edit Doctor Profile</h2>
+                <p style="color: var(--text-muted);">Update details for Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</p>
+            </div>
+            
+            {% if error %}
+            <div style="background: #f8dbdf; color: var(--danger); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
+                {{ error }}
+            </div>
+            {% endif %}
+            
+            <form method="POST" action="{% url 'core:edit_doctor' doctor.id %}" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                {% csrf_token %}
+                
+                <h4 style="color: var(--primary-dark); border-bottom: 1px solid #eaeaea; padding-bottom: 0.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">Account Details</h4>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-weight: 600; color: var(--text-main);">First Name</label>
+                        <input type="text" name="first_name" required value="{{ doctor.user.first_name }}" style="padding: 1rem; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light);">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-weight: 600; color: var(--text-main);">Last Name</label>
+                        <input type="text" name="last_name" required value="{{ doctor.user.last_name }}" style="padding: 1rem; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light);">
+                    </div>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; color: var(--text-main);">Email Address</label>
+                    <input type="email" name="email" required value="{{ doctor.user.email }}" style="padding: 1rem; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light);">
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; color: var(--text-main);">Profile Picture (Leave blank to keep current)</label>
+                    <input type="file" name="profile_picture" accept="image/*" style="padding: 1rem; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light);">
+                </div>
+
+                <h4 style="color: var(--primary-dark); border-bottom: 1px solid #eaeaea; padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.2rem;">Professional Profile</h4>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; color: var(--text-main);">Department</label>
+                    <select name="department" style="padding: 1rem; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light); cursor: pointer;">
+                        <option value="">-- Select Department (Optional) --</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if doctor.department and doctor.department.id == dept.id %}selected{% endif %}>{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-weight: 600; color: var(--text-main);">Years of Experience</label>
+                        <input type="number" name="experience" min="0" value="{{ doctor.experience_years }}" style="padding: 1rem; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light);">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-weight: 600; color: var(--text-main);">Consultation Fee ($)</label>
+                        <input type="number" name="fee" step="0.01" min="0" value="{{ doctor.consultation_fee }}" style="padding: 1rem; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light);">
+                    </div>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; color: var(--text-main);">Availability details</label>
+                    <input type="text" name="availability" value="{{ doctor.availability }}" style="padding: 1rem; border-radius: 8px; border: 1px solid #d1d5db; width: 100%; font-size: 1rem; background: var(--bg-light);">
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <a href="{% url 'core:doctors' %}" class="btn btn-outline" style="padding: 1.2rem; flex: 1; text-align: center; border-radius: 8px; font-weight: 600;">Cancel</a>
+                    <button type="submit" class="btn btn-primary" style="padding: 1.2rem; flex: 2; border-radius: 8px; font-weight: 600; background: var(--secondary-color); border-color: var(--secondary-color);"><i class="fa-solid fa-save"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

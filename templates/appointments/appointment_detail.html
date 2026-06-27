@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}Appointment Notes - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: var(--primary-color); color: white; padding: 4rem 2rem; text-align: center;">
+    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-notes-medical"></i> Consultation Notes</h1>
+    <p style="font-size: 1.1rem; opacity: 0.9;">Details for your visit on {{ appointment.date|date:"M d, Y" }}</p>
+</section>
+
+<section style="padding: 4rem 2rem; background: var(--bg-light); min-height: 50vh;">
+    <div class="container" style="max-width: 800px;">
+        
+        <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: var(--shadow-md); margin-bottom: 2rem;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
+                <div>
+                    <h3 style="margin-top: 0; color: var(--primary-dark); margin-bottom: 0.5rem;">Dr. {{ appointment.doctor.user.get_full_name|default:appointment.doctor.user.username }}</h3>
+                    <p style="margin: 0; color: var(--text-muted);">{{ appointment.doctor.department.name|default:"General Practice" }}</p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="margin: 0; font-weight: 500;">{{ appointment.date|date:"l, F d, Y" }}</p>
+                    <p style="margin: 0; color: var(--text-muted);">{{ appointment.time|time:"h:i A" }}</p>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Primary Diagnosis</h4>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid var(--secondary-color);">
+                    <p style="margin: 0; font-size: 1.1rem; font-weight: 500; color: var(--text-main);">{{ appointment.disease_diagnosis|default:"No primary diagnosis recorded." }}</p>
+                </div>
+            </div>
+
+            {% if appointment.prescription %}
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">General Notes / Instructions</h4>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                    <p style="margin: 0; white-space: pre-wrap; color: var(--text-main);">{{ appointment.prescription }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if medicines %}
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-pills"></i> Prescribed Pharmacy Medicines</h4>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f0f4f8; color: #444; text-align: left;">
+                            <th style="padding: 1rem; border-radius: 8px 0 0 8px;">Medicine</th>
+                            <th style="padding: 1rem;">Qty</th>
+                            <th style="padding: 1rem; border-radius: 0 8px 8px 0;">Dosage Instructions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in medicines %}
+                        <tr style="border-bottom: 1px solid #f0f0f0;">
+                            <td style="padding: 1rem;">
+                                <strong>{{ item.medicine.name }}</strong><br>
+                                <small style="color: var(--text-muted);">{{ item.medicine.formula }}</small>
+                            </td>
+                            <td style="padding: 1rem;">{{ item.quantity }}</td>
+                            <td style="padding: 1rem; color: #555;">{{ item.dosage_instructions|default:"—" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if appointment.test_reports %}
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Recommended Lab Tests</h4>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                    <p style="margin: 0; white-space: pre-wrap; color: var(--text-main);">{{ appointment.test_reports }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        {% if bill %}
+        <div style="background: white; padding: 2rem 3rem; border-radius: 12px; box-shadow: var(--shadow-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-dark);">Billing Status</h4>
+                {% if bill.is_paid %}
+                    <p style="margin: 0; color: var(--success); font-weight: bold;"><i class="fa-solid fa-check-circle"></i> Paid in Full</p>
+                {% else %}
+                    <p style="margin: 0; color: var(--danger); font-weight: bold;"><i class="fa-solid fa-circle-exclamation"></i> Payment Required: ${{ bill.grand_total }}</p>
+                {% endif %}
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <a href="{% url 'pharmacy:unified_bill_detail' bill.id %}" class="btn btn-outline" style="border-radius: 6px;"><i class="fa-solid fa-file-invoice"></i> View Invoice</a>
+                {% if not bill.is_paid %}
+                <form action="{% url 'pharmacy:pay_unified_bill' bill.id %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary" style="background: var(--success); border-color: var(--success); border-radius: 6px;"><i class="fa-solid fa-credit-card"></i> Pay Now</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="{% url 'accounts:patient_dashboard' %}" class="btn btn-outline" style="padding: 0.75rem 2rem; border-radius: 6px;"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

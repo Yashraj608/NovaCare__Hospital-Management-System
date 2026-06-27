@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}About Us - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: url({% static 'images/doctor_consultation_smiling_1773591303749.png' %}) center/cover; padding: 6rem 2rem; text-align: center; color: white; position: relative;">
+    <div style="position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); z-index: 1;"></div>
+    <div class="container reveal" style="position: relative; z-index: 2;">
+        <h1 style="font-size: 3.5rem; margin-bottom: 1rem;">About NovaCare Hospital</h1>
+        <p style="font-size: 1.3rem; max-width: 700px; margin: 0 auto; opacity: 0.95;">A legacy of excellence in healthcare. We are driven by compassion and guided by science.</p>
+    </div>
+</section>
+
+<section style="padding: 6rem 2rem; background: var(--bg-light);">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;">
+            <div class="reveal">
+                <h2 style="color: var(--primary-dark); font-size: 2.5rem; margin-bottom: 1.5rem;">Our Mission & Vision</h2>
+                <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.5rem;">At NovaCare, our mission is to provide unparalleled medical care that meets the highest standards of quality and safety. We envision a community where advanced healthcare is accessible to all, delivered with empathy and respect.</p>
+                <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.8;">Our core values center around Patient-First Care, Integrity, Innovation, and Excellence. Every member of our staff is dedicated to ensuring you have a positive, healing experience from the moment you walk through our doors.</p>
+            </div>
+            <div class="reveal" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-sm); text-align: center;">
+                    <h3 style="color: var(--primary-color); font-size: 2.5rem; font-weight: 700;">25+</h3>
+                    <p style="color: var(--text-muted);">Years of Excellence</p>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-sm); text-align: center;">
+                    <h3 style="color: var(--primary-color); font-size: 2.5rem; font-weight: 700;">500+</h3>
+                    <p style="color: var(--text-muted);">Medical Professionals</p>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-sm); text-align: center;">
+                    <h3 style="color: var(--primary-color); font-size: 2.5rem; font-weight: 700;">50k+</h3>
+                    <p style="color: var(--text-muted);">Patients Treated Annually</p>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-sm); text-align: center;">
+                    <h3 style="color: var(--primary-color); font-size: 2.5rem; font-weight: 700;">10</h3>
+                    <p style="color: var(--text-muted);">Specialized Departments</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

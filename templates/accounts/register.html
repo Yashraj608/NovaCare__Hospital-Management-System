@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Patient Registration - NovaCare{% endblock %}
+
+{% block content %}
+<section style="padding: 6rem 2rem; background: var(--bg-light); min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+    <div class="container reveal" style="max-width: 600px; width: 100%;">
+        <div style="background: white; padding: 3rem; border-radius: 16px; box-shadow: var(--shadow-lg);">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <i class="fa-solid fa-user-plus" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                <h2 style="color: var(--primary-dark); font-size: 2rem;">Create an Account</h2>
+                <p style="color: var(--text-muted);">Join NovaCare to book appointments and view your records.</p>
+            </div>
+            
+            {% if error %}
+            <div style="background: #f8dbdf; color: var(--danger); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
+                {{ error }}
+            </div>
+            {% endif %}
+            
+            <form method="POST" action="{% url 'accounts:register' %}" style="display: flex; flex-direction: column; gap: 1.5rem;" autocomplete="off">
+                {% csrf_token %}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <input type="text" name="first_name" placeholder="First Name" required style="padding: 1rem; border-radius: 8px; border: 1px solid #ccc; width: 100%; font-size: 1rem;" autocomplete="off">
+                    <input type="text" name="last_name" placeholder="Last Name" required style="padding: 1rem; border-radius: 8px; border: 1px solid #ccc; width: 100%; font-size: 1rem;" autocomplete="off">
+                </div>
+                <input type="text" name="username" placeholder="Username (for login)" required style="padding: 1rem; border-radius: 8px; border: 1px solid #ccc; width: 100%; font-size: 1rem;" autocomplete="off">
+                <input type="email" name="email" placeholder="Email Address" required style="padding: 1rem; border-radius: 8px; border: 1px solid #ccc; width: 100%; font-size: 1rem;" autocomplete="off">
+                <input type="password" name="password" placeholder="Password" required style="padding: 1rem; border-radius: 8px; border: 1px solid #ccc; width: 100%; font-size: 1rem;" autocomplete="new-password">
+                
+                <button type="submit" class="btn btn-primary" style="padding: 1rem; font-size: 1.1rem; border-radius: 8px; margin-top: 1rem;">Register Account</button>
+            </form>
+            <p style="text-align: center; margin-top: 2rem; color: var(--text-muted);">Already have an account? <a href="{% url 'accounts:login' %}" style="color: var(--primary-color); font-weight: 600;">Log in here</a></p>
+        </div>
+    </div>
+</section>
+{% endblock %}

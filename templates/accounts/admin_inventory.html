@@ -1,0 +1,149 @@
+{% extends 'accounts/admin_base.html' %}
+{% load static %}
+
+{% block title %}Inventory | NovaCare Admin{% endblock %}
+{% block nav_inventory %}active{% endblock %}
+{% block header_title %}Pharmacy Inventory{% endblock %}
+{% block header_subtitle %}Manage hospital pharmacy stock and medicines.{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Card Container */
+    .card-container { background: var(--card-bg); border-radius: var(--border-radius); padding: 1.5rem; box-shadow: var(--card-shadow); border: 1px solid var(--border); }
+    
+    /* Toolbar inside card */
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+    .toolbar-actions { display: flex; gap: 1rem; align-items: center; }
+    .btn-filter { background: white; border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 6px; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; }
+    .btn-primary { background: var(--secondary); color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: 500; font-size: 0.85rem; cursor: pointer; text-decoration: none; }
+
+    /* Table */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 1rem; color: var(--text-muted); font-weight: 500; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+    td { padding: 1rem; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; color: var(--text-main); vertical-align: middle; }
+    
+    .med-cell { display: flex; align-items: center; gap: 1rem; }
+    .med-image { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; box-shadow: var(--card-shadow); }
+    .med-placeholder { width: 48px; height: 48px; border-radius: 8px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 1.2rem; }
+    
+    .med-info strong { display: block; color: var(--text-main); font-size: 0.95rem; }
+    .med-info span { color: var(--text-muted); font-size: 0.8rem; }
+    
+    .rx-badge { background: #ffebee; color: #d32f2f; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.5rem; font-weight: 600; }
+
+    .stock-badge { padding: 0.3rem 0.6rem; border-radius: 20px; font-weight: 600; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .stock-high { background: #e8f5e9; color: #2e7d32; }
+    .stock-low { background: #fff3e0; color: #ef6c00; }
+    .stock-out { background: #ffebee; color: #c62828; }
+
+    .action-icons { display: flex; gap: 0.5rem; }
+    .icon-btn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-decoration: none; }
+    .icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Stats Summary -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+    <div style="background: white; border-radius: var(--border-radius); padding: 1.5rem; border: 1px solid var(--border); display: flex; align-items: center; gap: 1.5rem;">
+        <div style="width: 50px; height: 50px; border-radius: 12px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+            <i class="fa-solid fa-boxes-stacked"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Total Items</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">{{ medicines.count }}</div>
+        </div>
+    </div>
+    
+    <div style="background: white; border-radius: var(--border-radius); padding: 1.5rem; border: 1px solid var(--border); display: flex; align-items: center; gap: 1.5rem;">
+        <div style="width: 50px; height: 50px; border-radius: 12px; background: #fff3e0; color: #ef6c00; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Low Stock Alerts</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">{{ low_stock_count }}</div>
+        </div>
+    </div>
+    
+    <div style="background: white; border-radius: var(--border-radius); padding: 1.5rem; border: 1px solid var(--border); display: flex; align-items: center; gap: 1.5rem;">
+        <div style="width: 50px; height: 50px; border-radius: 12px; background: #e8f5e9; color: #2e7d32; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+            <i class="fa-solid fa-prescription-bottle-medical"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Rx Required</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">{{ rx_count }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card-container">
+    <div class="toolbar">
+        <div>
+            <h3 style="color: var(--text-main); font-size: 1.1rem; font-weight: 600;">Inventory List</h3>
+        </div>
+        <div class="toolbar-actions">
+            <button class="btn-filter"><i class="fa-solid fa-sliders"></i> Filter</button>
+            <a href="{% url 'pharmacy:medicine_add' %}" class="btn-primary"><i class="fa-solid fa-plus"></i> Add Medicine</a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Medicine</th>
+                    <th>Formula / Manufacturer</th>
+                    <th>Stock Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for med in medicines %}
+                <tr>
+                    <td>
+                        <div class="med-cell">
+                            {% if med.image %}
+                            <img src="{{ med.image.url }}" alt="{{ med.name }}" class="med-image">
+                            {% else %}
+                            <div class="med-placeholder"><i class="fa-solid fa-pills"></i></div>
+                            {% endif %}
+                            
+                            <div class="med-info">
+                                <strong>{{ med.name }} {% if med.requires_prescription %}<span class="rx-badge">Rx</span>{% endif %}</strong>
+                                <span>Exp: {{ med.expiry_date|date:"M Y"|default:"N/A" }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">{{ med.formula|default:"N/A" }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">{{ med.manufacturer|default:"Unknown" }}</div>
+                    </td>
+                    <td>
+                        {% if med.stock_quantity == 0 %}
+                            <span class="stock-badge stock-out"><i class="fa-solid fa-xmark"></i> Out of Stock</span>
+                        {% elif med.stock_quantity < 20 %}
+                            <span class="stock-badge stock-low"><i class="fa-solid fa-arrow-down"></i> {{ med.stock_quantity }} Low</span>
+                        {% else %}
+                            <span class="stock-badge stock-high"><i class="fa-solid fa-check"></i> {{ med.stock_quantity }} In Stock</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong style="color: var(--primary);">${{ med.price }}</strong>
+                    </td>
+                    <td>
+                        <div class="action-icons">
+                            <a href="{% url 'pharmacy:medicine_edit' med.id %}" class="icon-btn" title="Edit"><i class="fa-regular fa-edit"></i></a>
+                            <a href="{% url 'pharmacy:medicine_delete' med.id %}" class="icon-btn" title="Delete" style="color: #d32f2f;"><i class="fa-regular fa-trash-can"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="text-align:center; padding: 2rem; color: var(--text-muted);">No medicines found in inventory.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

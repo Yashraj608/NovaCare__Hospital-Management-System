@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Edit Medicine{% else %}Add Medicine{% endif %} - NovaCare{% endblock %}
+
+{% block content %}
+<section class="page-header" style="background: var(--primary-dark); color: white; padding: 2rem; text-align: center;">
+    <h1>{% if object %}Edit Medicine: {{ object.name }}{% else %}Add New Medicine{% endif %}</h1>
+</section>
+
+<section style="padding: 3rem 2rem; background: var(--bg-light); min-height: 50vh;">
+    <div class="container" style="max-width: 600px; background: white; border-radius: 12px; padding: 2rem; box-shadow: var(--shadow-sm);">
+        <form method="post" enctype="multipart/form-data" class="modern-form">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: bold; margin-bottom: 0.5rem; color: var(--primary-dark);">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                <div style="color: #dc3545; font-size: 0.85rem; margin-top: 0.25rem;">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button type="submit" class="btn" style="background: var(--success); color: white; padding: 0.8rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-size: 1.1rem; font-weight: bold; width: 100%;">{% if object %}Save Changes{% else %}+ Add Medicine to Inventory{% endif %}</button>
+                <a href="{% url 'pharmacy:medicine_list' %}" class="btn" style="background: #e2e8f0; color: #475569; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 6px; font-size: 1.1rem; text-align: center;">Cancel</a>
+            </div>
+        </form>
+        <style>
+            .modern-form input[type="text"], .modern-form input[type="number"], .modern-form input[type="file"], .modern-form textarea {
+                width: 100%;
+                padding: 0.8rem;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                font-family: inherit;
+                font-size: 1rem;
+            }
+            .modern-form input:focus, .modern-form textarea:focus {
+                outline: none;
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+            }
+            .modern-form input[type="checkbox"] {
+                transform: scale(1.5);
+                margin-left: 0.5rem;
+            }
+        </style>
+    </div>
+</section>
+{% endblock %}
